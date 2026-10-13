@@ -36,6 +36,35 @@ feeds:
   - {name: "Google News: Cloud outages", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=(AWS+OR+Azure+OR+%22Google+Cloud%22+OR+%22Microsoft+365%22+OR+%22Citrix+DaaS%22+OR+Cloudflare+OR+CrowdStrike)+outage", type: search, tags: [outage], outage: true}
   - {name: "Bing News: Cloud outages", url: "https://www.bing.com/news/search?format=rss&q=cloud+outage", type: search, tags: [outage], outage: true}
   - {name: "Bing News: Microsoft 365 outage", url: "https://www.bing.com/news/search?format=rss&q=Microsoft+365+outage", type: search, tags: [outage, m365], outage: true}
+  # --- AI (own section) ---
+  - {name: OpenAI News, url: "https://openai.com/news/rss.xml", type: rss, tags: [ai, openai], max_items: 25}
+  - {name: Google Gemini Blog, url: "https://blog.google/products/gemini/rss/", type: rss, tags: [ai, gemini]}
+  - {name: Hugging Face Blog, url: "https://huggingface.co/blog/feed.xml", type: rss, tags: [ai, huggingface], max_items: 25}
+  - {name: Ollama Blog, url: "https://ollama.com/blog/rss.xml", type: rss, tags: [ai, local-llm], max_items: 15}
+  - {name: Ollama releases, url: "https://github.com/ollama/ollama/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "Ollama", max_items: 3}
+  - {name: llama.cpp releases, url: "https://github.com/ggml-org/llama.cpp/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "llama.cpp", max_items: 2}
+  - {name: OpenClaw releases, url: "https://github.com/openclaw/openclaw/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "OpenClaw", max_items: 3}
+  - {name: Hermes Agent releases (Nous Research), url: "https://github.com/NousResearch/hermes-agent/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "Hermes Agent", max_items: 3}
+  - {name: r/LocalLLaMA, url: "https://www.reddit.com/r/LocalLLaMA/.rss", type: rss, tags: [ai, local-llm], max_items: 15}
+  - {name: "Google News: Grok", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Grok+xAI", type: search, tags: [ai, grok], max_items: 30}
+  - {name: "Bing News: Grok", url: "https://www.bing.com/news/search?format=rss&q=Grok+xAI", type: search, tags: [ai, grok]}
+  - {name: "Google News: Claude", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Claude+AI", type: search, tags: [ai, claude], max_items: 30}
+  - {name: "Bing News: Claude", url: "https://www.bing.com/news/search?format=rss&q=Anthropic+Claude", type: search, tags: [ai, claude]}
+  - {name: "Google News: OpenAI", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=OpenAI", type: search, tags: [ai, openai], max_items: 30}
+  - {name: "Bing News: OpenAI", url: "https://www.bing.com/news/search?format=rss&q=OpenAI", type: search, tags: [ai, openai]}
+  - {name: "Google News: Gemini", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Google+Gemini", type: search, tags: [ai, gemini], max_items: 30}
+  - {name: "Bing News: Gemini", url: "https://www.bing.com/news/search?format=rss&q=Google+Gemini", type: search, tags: [ai, gemini]}
+  - {name: "Google News: OpenClaw", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=OpenClaw", type: search, tags: [ai, local-llm], max_items: 30}
+  - {name: "Google News: Hermes LLM", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Nous+Research+Hermes", type: search, tags: [ai, local-llm], max_items: 30}
+  - {name: "Google News: LM Studio", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22LM+Studio%22", type: search, tags: [ai, local-llm], max_items: 30}
+  - {name: "Bing News: LM Studio", url: "https://www.bing.com/news/search?format=rss&q=LM+Studio", type: search, tags: [ai, local-llm]}
+  - {name: "Google News: Low-VRAM local LLMs", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%28%22low+VRAM%22+OR+%228GB+GPU%22+OR+%2212GB+GPU%22+OR+quantized%29+LLM", type: search, tags: [ai, local-llm], max_items: 30}
+  # --- LinkedIn-derived (no scraping/logins: public news-search results + creators' own blogs) ---
+  - {name: "Google News: LinkedIn Pulse EUC", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=site%3Alinkedin.com%2Fpulse+%28Citrix+OR+AVD+OR+VDI+OR+%22Windows+365%22+OR+Omnissa+OR+FSLogix+OR+NetScaler%29", type: search, tags: [linkedin]}
+  - {name: "Google News: LinkedIn Pulse IT", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=site%3Alinkedin.com%2Fpulse+%28Intune+OR+%22Windows+11%22+OR+%22Microsoft+365%22+OR+IGEL+OR+ControlUp+OR+Nutanix%29", type: search, tags: [linkedin]}
+  - {name: George Spiers (EUC blog), url: "https://www.jgspiers.com/feed/", type: rss, tags: [citrix, community]}
+  - {name: Dennis Span (EUC blog), url: "https://www.dennisspan.com/feed/", type: rss, tags: [citrix, community]}
+  - {name: Christiaan Brinkhoff (W365/AVD blog), url: "https://christiaanbrinkhoff.com/feed/", type: rss, tags: [w365, community]}
   # --- Keyword searches ---
   - {name: "Google News: Intune", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22Microsoft+Intune%22", type: search, tags: [intune, microsoft]}
   - {name: "Bing News: Intune", url: "https://www.bing.com/news/search?format=rss&q=Microsoft+Intune", type: search, tags: [intune, microsoft]}
@@ -94,6 +123,13 @@ tag_keywords:
   w365: ["windows 365", "cloud pc"]
   windows: ["windows 11", "windows server 2025", "windows server"]
   patch: ["patch tuesday", "known issue", "cumulative update", " kb50"]
+  ai: ["artificial intelligence", " llm", "large language model", "generative ai", "genai"]
+  grok: [grok, "xai "]
+  claude: [claude, anthropic]
+  openai: [openai, chatgpt, "gpt-5", "gpt-4"]
+  gemini: [gemini, deepmind]
+  huggingface: ["hugging face", huggingface]
+  local-llm: [ollama, "llama.cpp", "lm studio", gguf, quantiz, "local llm", "localllama", openclaw, "hermes agent", "low vram"]
   security: [cve-, vulnerability, exploit, zero-day, "0-day", ransomware, "security update", advisory]
 
 # Curated EUC X accounts shown in "X / Community" (profile links, no API needed).

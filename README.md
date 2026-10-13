@@ -14,6 +14,10 @@ Automated End-User Computing news aggregator: Citrix/NetScaler, Omnissa & VMware
 - Duplicates are merged on normalized URL (no scheme, `www.`, tracking params or trailing slash; Google News/Bing redirects resolved) or fuzzy title match (Jaccard ≥ 0.8 after removing publisher suffix and stopwords). Merged copies become "related coverage".
 - Stories are clustered by title similarity (≥ 0.5), shared CVE ID, or shared KB number; each cluster appears once on the page, in its lead story's section, and Top Stories are not repeated below.
 
+### AI section & LinkedIn-derived sources
+- **AI & Local LLMs** section: OpenAI, Google Gemini, Hugging Face and Ollama blogs; GitHub release feeds (Ollama, llama.cpp, OpenClaw, Hermes Agent); r/LocalLLaMA; news searches for Grok, Claude, OpenAI, Gemini, OpenClaw, Hermes, LM Studio and low-VRAM/quantized models. AI items get a ranking penalty (`AI_PENALTY`) so they don't dominate Top Stories.
+- LinkedIn: no scraping or logins. Public Google News results for `site:linkedin.com/pulse` + EUC/IT keywords, plus the public blogs of EUC creators. Items are routed to the normal topic sections by tags.
+
 ### Ranking & thumbnails
 `fetch.py` scores each story by recency (36h half-life), vendor relevance, multi-publisher coverage (title clustering), security severity (KEV/zero-day/critical), trusted sources, and a **Citrix/NetScaler boost**. Thumbnails come from feed media, Bing `News:Image`, or the article's `og:image` (capped per run). Google News redirect links are resolved to the publisher (best effort, capped), and Bing/publisher copies are preferred when de-duplicating.
 - `.github/workflows/update.yml` – runs every 4 hours (and on demand), keeps `data/items.json` between runs via the Actions cache (not committed), and deploys to GitHub Pages.

@@ -7,9 +7,10 @@
     { id: "windows", name: "Microsoft & Windows", short: "Windows", c: "#2b8a9e" },
     { id: "cloud", name: "Cloud & Microsoft 365", short: "Cloud & M365", c: "#7b5cc4" },
     { id: "endpoints", name: "Endpoints & Management", short: "Endpoints", c: "#3d8a55" },
+    { id: "ai", name: "AI & Local LLMs", short: "AI", c: "#b0567f" },
     { id: "community", name: "Community / X", short: "Community" },
   ];
-  const VENDORS = { citrix: "Citrix", netscaler: "NetScaler", xenserver: "XenServer", vmware: "VMware", omnissa: "Omnissa",
+  const VENDORS = { grok: "Grok", claude: "Claude", openai: "OpenAI", gemini: "Gemini", huggingface: "Hugging Face", "local-llm": "Local LLM", citrix: "Citrix", netscaler: "NetScaler", xenserver: "XenServer", vmware: "VMware", omnissa: "Omnissa",
     nutanix: "Nutanix", avd: "AVD", w365: "Windows 365", fslogix: "FSLogix", microsoft: "Microsoft", windows: "Windows",
     m365: "M365", "azure-local": "Azure Local", intune: "Intune", igel: "IGEL", controlup: "ControlUp", unicon: "Unicon" };
   const st = { all: [], outages: [], x: [], tab: "top", q: "", vendor: "" };
@@ -90,7 +91,7 @@
     const items = visible();
     let html;
     st.used = new Set();
-    if (st.tab === "top") { const top = topStories(items); html = top + SECTIONS.slice(1, 6).map((s) => sectionBlock(s, items, false, st.used)).join(""); }
+    if (st.tab === "top") { const top = topStories(items); html = top + SECTIONS.slice(1, 7).map((s) => sectionBlock(s, items, false, st.used)).join(""); }
     else if (st.tab === "community") html = community(true);
     else html = sectionBlock(secOf(st.tab), items, true);
     $("#main").innerHTML = html;

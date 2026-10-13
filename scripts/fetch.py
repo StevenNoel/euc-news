@@ -37,7 +37,11 @@ SECTIONS = [
     ("cloud", {"m365", "azure-local"}),
     ("windows", {"windows", "patch", "microsoft"}),
 ]
-VENDOR_TAGS = ["citrix", "netscaler", "xenserver", "vmware", "omnissa", "nutanix", "avd", "w365", "fslogix",
+AI_TAGS = ["grok", "claude", "openai", "gemini", "huggingface", "local-llm"]
+EUC_TAGS = {"citrix", "netscaler", "xenserver", "vmware", "omnissa", "nutanix", "avd", "w365", "fslogix",
+            "m365", "azure-local", "intune", "igel", "controlup", "unicon"}
+AI_PENALTY = 4  # keep AI moderate in Top Stories; Citrix boost stays highest
+VENDOR_TAGS = AI_TAGS + ["citrix", "netscaler", "xenserver", "vmware", "omnissa", "nutanix", "avd", "w365", "fslogix",
                "microsoft", "windows", "m365", "azure-local", "intune", "igel", "controlup", "unicon"]
 TRUSTED = ("cisa", "msrc", "microsoft", "bleepingcomputer", "the register", "born", "citrix", "omnissa",
            "broadcom", "vmware", "nutanix", "igel", "controlup", "securityweek", "ars technica", "carl stalhood")
@@ -170,6 +174,8 @@ def section_of(it):
         return "outages"
     if it.get("security"):
         return "security"
+    if ("ai" in it["tags"] or set(AI_TAGS) & set(it["tags"])) and not (EUC_TAGS & set(it["tags"])):
+        return "ai"
     tags = set(it["tags"])
     for sec, keys in SECTIONS:
         if keys & tags:
@@ -286,6 +292,8 @@ def fetch_rss(feed, tag_map):
                     title = title[: -len(pub) - 3].strip()
             else:
                 title = re.sub(r"\s+-\s+[^-]{2,60}$", "", title)
+        if feed.get("title_prefix") and not title.lower().startswith(feed["title_prefix"].lower()):
+            title = f"{feed['title_prefix']} {title}"
         if feed.get("outage"):
             # status feeds: skip scheduled maintenance and undated entries; news: require outage wording
             if not to_dt(e) or re.search(r"maintenance|\([^)]+\) on \d{4}-\d{2}-\d{2}", title, re.I):
@@ -503,7 +511,8 @@ def main():
             citrix = 5 if {"citrix", "netscaler"} & set(i["vendors"]) else 0  # Steve: boost Citrix highest
             trust = 1.5 if any(t in i["source"].lower() for t in TRUSTED) else 0
             i["score"] = round(10 * 0.5 ** (age_h / 36) + 1.2 * len(i["vendors"][:3]) + 2 * min(len(cov) - 1, 4)
-                               + sev + trust + citrix + (1 if i["image"] else 0), 2)
+                               + sev + trust + citrix + (1 if i["image"] else 0)
+                               - (AI_PENALTY if i["section"] == "ai" else 0), 2)
         g.sort(key=lambda i: (i["score"], bool(i["image"])), reverse=True)
         lead = g[0]
         for i in g:  # one cluster -> one section (the lead's)
