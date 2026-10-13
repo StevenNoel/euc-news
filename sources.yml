@@ -37,28 +37,28 @@ feeds:
   - {name: "Bing News: Cloud outages", url: "https://www.bing.com/news/search?format=rss&q=cloud+outage", type: search, tags: [outage], outage: true}
   - {name: "Bing News: Microsoft 365 outage", url: "https://www.bing.com/news/search?format=rss&q=Microsoft+365+outage", type: search, tags: [outage, m365], outage: true}
   # --- AI (own section) ---
-  - {name: OpenAI News, url: "https://openai.com/news/rss.xml", type: rss, tags: [ai, openai], max_items: 25}
-  - {name: Google Gemini Blog, url: "https://blog.google/products/gemini/rss/", type: rss, tags: [ai, gemini]}
-  - {name: Hugging Face Blog, url: "https://huggingface.co/blog/feed.xml", type: rss, tags: [ai, huggingface], max_items: 25}
-  - {name: Ollama Blog, url: "https://ollama.com/blog/rss.xml", type: rss, tags: [ai, local-llm], max_items: 15}
+  - {name: OpenAI News, url: "https://openai.com/news/rss.xml", type: rss, tags: [ai, openai], max_items: 12}
+  - {name: Google Gemini Blog, url: "https://blog.google/products/gemini/rss/", type: rss, tags: [ai, gemini], max_items: 12}
+  - {name: Hugging Face Blog, url: "https://huggingface.co/blog/feed.xml", type: rss, tags: [ai, huggingface], max_items: 12}
+  - {name: Ollama Blog, url: "https://ollama.com/blog/rss.xml", type: rss, tags: [ai, local-llm], max_items: 12}
   - {name: Ollama releases, url: "https://github.com/ollama/ollama/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "Ollama", max_items: 3}
   - {name: llama.cpp releases, url: "https://github.com/ggml-org/llama.cpp/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "llama.cpp", max_items: 2}
   - {name: OpenClaw releases, url: "https://github.com/openclaw/openclaw/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "OpenClaw", max_items: 3}
   - {name: Hermes Agent releases (Nous Research), url: "https://github.com/NousResearch/hermes-agent/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "Hermes Agent", max_items: 3}
-  - {name: r/LocalLLaMA, url: "https://www.reddit.com/r/LocalLLaMA/.rss", type: rss, tags: [ai, local-llm], max_items: 15}
-  - {name: "Google News: Grok", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Grok+xAI", type: search, tags: [ai, grok], max_items: 30}
-  - {name: "Bing News: Grok", url: "https://www.bing.com/news/search?format=rss&q=Grok+xAI", type: search, tags: [ai, grok]}
-  - {name: "Google News: Claude", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Claude+AI", type: search, tags: [ai, claude], max_items: 30}
-  - {name: "Bing News: Claude", url: "https://www.bing.com/news/search?format=rss&q=Anthropic+Claude", type: search, tags: [ai, claude]}
-  - {name: "Google News: OpenAI", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=OpenAI", type: search, tags: [ai, openai], max_items: 30}
-  - {name: "Bing News: OpenAI", url: "https://www.bing.com/news/search?format=rss&q=OpenAI", type: search, tags: [ai, openai]}
-  - {name: "Google News: Gemini", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Google+Gemini", type: search, tags: [ai, gemini], max_items: 30}
-  - {name: "Bing News: Gemini", url: "https://www.bing.com/news/search?format=rss&q=Google+Gemini", type: search, tags: [ai, gemini]}
-  - {name: "Google News: OpenClaw", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=OpenClaw", type: search, tags: [ai, local-llm], max_items: 30}
-  - {name: "Google News: Hermes LLM", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Nous+Research+Hermes", type: search, tags: [ai, local-llm], max_items: 30}
-  - {name: "Google News: LM Studio", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22LM+Studio%22", type: search, tags: [ai, local-llm], max_items: 30}
-  - {name: "Bing News: LM Studio", url: "https://www.bing.com/news/search?format=rss&q=LM+Studio", type: search, tags: [ai, local-llm]}
-  - {name: "Google News: Low-VRAM local LLMs", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%28%22low+VRAM%22+OR+%228GB+GPU%22+OR+%2212GB+GPU%22+OR+quantized%29+LLM", type: search, tags: [ai, local-llm], max_items: 30}
+  - {name: r/LocalLLaMA, url: "https://www.reddit.com/r/LocalLLaMA/.rss", type: rss, tags: [ai, local-llm], max_items: 12}
+  - {name: "Google News: Grok", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Grok+xAI", type: search, tags: [ai, grok], max_items: 12}
+  - {name: "Bing News: Grok", url: "https://www.bing.com/news/search?format=rss&q=Grok+xAI", type: search, tags: [ai, grok], max_items: 12}
+  - {name: "Google News: Claude", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Claude+AI", type: search, tags: [ai, claude], max_items: 12}
+  - {name: "Bing News: Claude", url: "https://www.bing.com/news/search?format=rss&q=Anthropic+Claude", type: search, tags: [ai, claude], max_items: 12}
+  - {name: "Google News: OpenAI", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=OpenAI", type: search, tags: [ai, openai], max_items: 12}
+  - {name: "Bing News: OpenAI", url: "https://www.bing.com/news/search?format=rss&q=OpenAI", type: search, tags: [ai, openai], max_items: 12}
+  - {name: "Google News: Gemini", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Google+Gemini", type: search, tags: [ai, gemini], max_items: 12}
+  - {name: "Bing News: Gemini", url: "https://www.bing.com/news/search?format=rss&q=Google+Gemini", type: search, tags: [ai, gemini], max_items: 12}
+  - {name: "Google News: OpenClaw", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=OpenClaw", type: search, tags: [ai, local-llm], max_items: 12}
+  - {name: "Google News: Hermes LLM", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Nous+Research+Hermes", type: search, tags: [ai, local-llm], max_items: 12, require_regex: "\\b(llm|ai|agent|model|nous|open[- ]source|weights|fine-?tun)", exclude_regex: "herm[eè]s (paris|birkin)|luxury|fashion|handbag|birkin|kelly bag|couture|perfume|scarf|leather|runway|boutique"}
+  - {name: "Google News: LM Studio", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22LM+Studio%22", type: search, tags: [ai, local-llm], max_items: 12}
+  - {name: "Bing News: LM Studio", url: "https://www.bing.com/news/search?format=rss&q=LM+Studio", type: search, tags: [ai, local-llm], max_items: 12}
+  - {name: "Google News: Low-VRAM local LLMs", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%28%22low+VRAM%22+OR+%228GB+GPU%22+OR+%2212GB+GPU%22+OR+quantized%29+LLM", type: search, tags: [ai, local-llm], max_items: 12}
   # --- LinkedIn-derived (no scraping/logins: public news-search results + creators' own blogs) ---
   - {name: "Google News: LinkedIn Pulse EUC", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=site%3Alinkedin.com%2Fpulse+%28Citrix+OR+AVD+OR+VDI+OR+%22Windows+365%22+OR+Omnissa+OR+FSLogix+OR+NetScaler%29", type: search, tags: [linkedin]}
   - {name: "Google News: LinkedIn Pulse IT", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=site%3Alinkedin.com%2Fpulse+%28Intune+OR+%22Windows+11%22+OR+%22Microsoft+365%22+OR+IGEL+OR+ControlUp+OR+Nutanix%29", type: search, tags: [linkedin]}

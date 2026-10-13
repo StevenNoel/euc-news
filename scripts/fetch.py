@@ -292,6 +292,11 @@ def fetch_rss(feed, tag_map):
                     title = title[: -len(pub) - 3].strip()
             else:
                 title = re.sub(r"\s+-\s+[^-]{2,60}$", "", title)
+        text = f"{title} {summary}"
+        if feed.get("exclude_regex") and re.search(feed["exclude_regex"], text, re.I):
+            continue
+        if feed.get("require_regex") and not re.search(feed["require_regex"], text, re.I):
+            continue
         if feed.get("title_prefix") and not title.lower().startswith(feed["title_prefix"].lower()):
             title = f"{feed['title_prefix']} {title}"
         if feed.get("outage"):
@@ -311,7 +316,7 @@ def fetch_rss(feed, tag_map):
         out.append(dict(title=title, link=link, summary=summary, source=source,
                         published=to_dt(e), undated=to_dt(e) is None or bool(feed.get("unreliable_dates")), tags=search_tags(feed, matched),
                         security=bool(feed.get("security")) and not feed.get("outage"),
-                        outage=bool(feed.get("outage")), image=entry_thumb(e)))
+                        outage=bool(feed.get("outage")), image=entry_thumb(e), feed=feed["name"]))
     return out
 
 
@@ -518,6 +523,19 @@ def main():
         for i in g:  # one cluster -> one section (the lead's)
             i["cluster"] = lead["id"]
             i["section"] = lead["section"]
+
+    # --- Cap AI per source across the whole rolling window (newest kept) ---
+    ai_caps = {f["name"]: f.get("max_items", 12) for f in cfg.get("feeds", []) if "ai" in f.get("tags", [])}
+    per_feed, kept = {}, []
+    for i in sorted(items, key=lambda i: i["published"], reverse=True):
+        f = i.get("feed")
+        if i["section"] == "ai" and f in ai_caps:
+            per_feed[f] = per_feed.get(f, 0) + 1
+            if per_feed[f] > ai_caps[f]:
+                continue
+        kept.append(i)
+    stats["ai_capped"] = len(items) - len(kept)
+    items = kept
 
     # --- Cap Security ---
     sec_clusters = sorted({i["cluster"] for i in items if i["section"] == "security"},

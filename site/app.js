@@ -10,9 +10,26 @@
     { id: "ai", name: "AI & Local LLMs", short: "AI", c: "#b0567f" },
     { id: "community", name: "Community / X", short: "Community" },
   ];
-  const VENDORS = { grok: "Grok", claude: "Claude", openai: "OpenAI", gemini: "Gemini", huggingface: "Hugging Face", "local-llm": "Local LLM", citrix: "Citrix", netscaler: "NetScaler", xenserver: "XenServer", vmware: "VMware", omnissa: "Omnissa",
+  const VENDORS = { citrix: "Citrix", netscaler: "NetScaler", xenserver: "XenServer", vmware: "VMware", omnissa: "Omnissa",
     nutanix: "Nutanix", avd: "AVD", w365: "Windows 365", fslogix: "FSLogix", microsoft: "Microsoft", windows: "Windows",
-    m365: "M365", "azure-local": "Azure Local", intune: "Intune", igel: "IGEL", controlup: "ControlUp", unicon: "Unicon" };
+    m365: "M365", "azure-local": "Azure Local", intune: "Intune", igel: "IGEL", controlup: "ControlUp", unicon: "Unicon",
+    grok: "Grok", claude: "Claude", openai: "OpenAI", gemini: "Gemini", huggingface: "Hugging Face", "local-llm": "Local LLM" };
+  // ---- user layout (order + hidden), saved in localStorage ----
+  const DEFAULT_ORDER = SECTIONS.map((s) => s.id);
+  const LKEY = "euc-news-layout-v1";
+  const layout = (() => {
+    try {
+      const v = JSON.parse(localStorage.getItem(LKEY) || "null");
+      if (v && Array.isArray(v.order)) {
+        const order = v.order.filter((id) => DEFAULT_ORDER.includes(id));
+        DEFAULT_ORDER.forEach((id) => { if (!order.includes(id)) order.push(id); });
+        return { order, hidden: new Set((v.hidden || []).filter((id) => DEFAULT_ORDER.includes(id))) };
+      }
+    } catch (e) {}
+    return { order: [...DEFAULT_ORDER], hidden: new Set() };
+  })();
+  const saveLayout = () => { try { localStorage.setItem(LKEY, JSON.stringify({ order: layout.order, hidden: [...layout.hidden] })); } catch (e) {} };
+  const shown = () => layout.order.filter((id) => !layout.hidden.has(id));
   const st = { all: [], outages: [], x: [], tab: "top", q: "", vendor: "" };
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const safe = (u) => (/^https?:\/\//i.test(u || "") ? u : "");
@@ -91,20 +108,79 @@
     const items = visible();
     let html;
     st.used = new Set();
-    if (st.tab === "top") { const top = topStories(items); html = top + SECTIONS.slice(1, 7).map((s) => sectionBlock(s, items, false, st.used)).join(""); }
+    if (st.tab === "top") {
+      const top = shown().includes("top") ? topStories(items) : ""; // computed first so sections below skip its stories
+      html = shown().filter((id) => id !== "community").map((id) => id === "top" ? top : sectionBlock(secOf(id), items, false, st.used)).join("")
+        || `<section class="sect"><p class="empty">All sections are hidden. Use Customize to show some.</p></section>`;
+    }
     else if (st.tab === "community") html = community(true);
     else html = sectionBlock(secOf(st.tab), items, true);
     $("#main").innerHTML = html;
     outages();
     $("#community").innerHTML = community(false);
+    $("#community").hidden = layout.hidden.has("community");
     document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", t.dataset.tab === st.tab));
   }
   function setTab(t, scroll = true) {
-    st.tab = t; render();
+    st.tab = t; render(); tabs();
     if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
     history.replaceState(null, "", t === "top" ? location.pathname : "#" + t);
   }
-  $("#tabs").innerHTML = SECTIONS.map((s) => `<button class="tab" role="tab" data-tab="${s.id}">${esc(s.short || s.name)}</button>`).join("");
+  function tabs() {
+    $("#tabs").innerHTML = shown().map((id) => { const s = SECTIONS.find((x) => x.id === id);
+      return `<button class="tab" role="tab" data-tab="${s.id}" aria-selected="${s.id === st.tab}">${esc(s.short || s.name)}</button>`; }).join("") +
+      `<button class="tab cust" id="custBtn" aria-haspopup="dialog" title="Customize sections"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v2H3V6Zm0 10h7v2H3v-2Zm14-11h2v4h2v2h-2v4h-2V5ZM13 15h8v2h-8v-2ZM9 14h2v6H9v-6ZM3 11h10v2H3v-2Z"/></svg>Customize</button>`;
+  }
+  tabs();
+
+  // ---- Customize panel ----
+  const dlg = $("#customize"), list = $("#custList");
+  function drawPanel(focusId, focusAct) {
+    list.innerHTML = layout.order.map((id, n) => { const s = SECTIONS.find((x) => x.id === id), on = !layout.hidden.has(id);
+      return `<li draggable="true" data-id="${id}" class="${on ? "" : "off"}">
+        <span class="grip" aria-hidden="true">⋮⋮</span>
+        <label class="sw"><input type="checkbox" data-act="toggle" ${on ? "checked" : ""} aria-label="Show ${esc(s.name)}"><span class="nm">${esc(s.name)}</span></label>
+        <button class="mv" data-act="up" aria-label="Move ${esc(s.name)} up" ${n === 0 ? "disabled" : ""}>↑</button>
+        <button class="mv" data-act="down" aria-label="Move ${esc(s.name)} down" ${n === layout.order.length - 1 ? "disabled" : ""}>↓</button></li>`; }).join("");
+    if (focusId) list.querySelector(`li[data-id="${focusId}"] [data-act="${focusAct}"]:not([disabled])`)?.focus();
+  }
+  function applyLayout() {
+    saveLayout();
+    if (!shown().includes(st.tab)) st.tab = shown().find((id) => id !== "community") || "top";
+    tabs(); render();
+  }
+  function move(id, delta) {
+    const i = layout.order.indexOf(id), k = i + delta;
+    if (k < 0 || k >= layout.order.length) return;
+    layout.order.splice(k, 0, layout.order.splice(i, 1)[0]);
+  }
+  document.addEventListener("click", (e) => { if (e.target.closest("#custBtn")) { e.stopPropagation(); drawPanel(); dlg.showModal(); } }, true);
+  list.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-act]"); if (!b) return;
+    const id = b.closest("li").dataset.id, act = b.dataset.act;
+    if (act === "up" || act === "down") { move(id, act === "up" ? -1 : 1); drawPanel(id, act); applyLayout(); }
+  });
+  list.addEventListener("change", (e) => {
+    const c = e.target.closest('[data-act="toggle"]'); if (!c) return;
+    const id = c.closest("li").dataset.id;
+    c.checked ? layout.hidden.delete(id) : layout.hidden.add(id);
+    c.closest("li").classList.toggle("off", !c.checked); applyLayout();
+  });
+  let dragId = null;
+  list.addEventListener("dragstart", (e) => { const li = e.target.closest("li"); dragId = li.dataset.id; li.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", dragId); });
+  list.addEventListener("dragend", (e) => { e.target.closest("li")?.classList.remove("dragging"); dragId = null; });
+  list.addEventListener("dragover", (e) => {
+    if (!dragId) return; e.preventDefault();
+    const li = e.target.closest("li"); if (!li || li.dataset.id === dragId) return;
+    const r = li.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+    const from = layout.order.indexOf(dragId); layout.order.splice(from, 1);
+    const to = layout.order.indexOf(li.dataset.id) + (after ? 1 : 0); layout.order.splice(to, 0, dragId);
+    drawPanel(); list.querySelector(`li[data-id="${dragId}"]`)?.classList.add("dragging");
+  });
+  list.addEventListener("drop", (e) => { e.preventDefault(); applyLayout(); });
+  $("#custReset").addEventListener("click", () => { layout.order = [...DEFAULT_ORDER]; layout.hidden = new Set(); drawPanel(); applyLayout(); });
+  $("#custDone").addEventListener("click", () => dlg.close());
+  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b) { e.preventDefault(); setTab(b.dataset.tab); } });
   $("#chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (!b) return;
     st.vendor = st.vendor === b.dataset.v ? "" : b.dataset.v; chips(); render(); });
@@ -126,6 +202,6 @@
     $("#updated").textContent = `Updated ${ago(d.updated)} · ${new Date(d.updated).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}`;
     chips();
     const h = location.hash.slice(1);
-    setTab(SECTIONS.some((s) => s.id === h) ? h : "top", false);
+    setTab(shown().includes(h) ? h : (shown().find((id) => id !== "community") || "top"), false);
   }).catch(() => { $("#updated").textContent = "Couldn't load the news data."; });
 })();

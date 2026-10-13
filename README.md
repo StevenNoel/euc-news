@@ -18,6 +18,9 @@ Automated End-User Computing news aggregator: Citrix/NetScaler, Omnissa & VMware
 - **AI & Local LLMs** section: OpenAI, Google Gemini, Hugging Face and Ollama blogs; GitHub release feeds (Ollama, llama.cpp, OpenClaw, Hermes Agent); r/LocalLLaMA; news searches for Grok, Claude, OpenAI, Gemini, OpenClaw, Hermes, LM Studio and low-VRAM/quantized models. AI items get a ranking penalty (`AI_PENALTY`) so they don't dominate Top Stories.
 - LinkedIn: no scraping or logins. Public Google News results for `site:linkedin.com/pulse` + EUC/IT keywords, plus the public blogs of EUC creators. Items are routed to the normal topic sections by tags.
 
+### Customize
+Readers can click **Customize** (end of the section tabs) to reorder sections (drag-and-drop or ↑/↓ buttons), hide/show them, or reset. Saved in the browser's localStorage (`euc-news-layout-v1`); applies to both the tabs and the Top Stories page.
+
 ### Ranking & thumbnails
 `fetch.py` scores each story by recency (36h half-life), vendor relevance, multi-publisher coverage (title clustering), security severity (KEV/zero-day/critical), trusted sources, and a **Citrix/NetScaler boost**. Thumbnails come from feed media, Bing `News:Image`, or the article's `og:image` (capped per run). Google News redirect links are resolved to the publisher (best effort, capped), and Bing/publisher copies are preferred when de-duplicating.
 - `.github/workflows/update.yml` – runs every 4 hours (and on demand), keeps `data/items.json` between runs via the Actions cache (not committed), and deploys to GitHub Pages.
@@ -27,7 +30,7 @@ Append to `feeds:` in `sources.yml`:
 ```yaml
   - {name: My Blog, url: "https://example.com/feed/", type: rss, tags: [citrix]}
 ```
-Optional keys: `security: true` (Security section), `outage: true` (Outages & status panel), `unreliable_dates: true`, `require_keywords: true` (only keep items matching a vendor tag – good for broad feeds), `max_items: 50`.
+Optional keys: `require_regex` / `exclude_regex` (filter by title+summary), `title_prefix`, `security: true` (Security section), `outage: true` (Outages & status panel), `unreliable_dates: true`, `require_keywords: true` (only keep items matching a vendor tag – good for broad feeds), `max_items: 50`.
 Check it first: `curl -sIL https://example.com/feed/`.
 
 ## Add a keyword search
