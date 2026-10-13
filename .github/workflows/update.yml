@@ -12,10 +12,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  fetch:
+  build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -24,18 +24,19 @@ jobs:
           python-version: "3.13"
           cache: pip
       - run: pip install -r requirements.txt
+      # Keep the 30-day rolling window between runs without committing data.
+      - name: Restore previous data
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: data/items.json
+          key: items-${{ github.run_id }}
+          restore-keys: items-
       - run: python scripts/fetch.py
-      - name: Commit data if changed
-        run: |
-          git config user.name "StevenNoel"
-          git config user.email "StevenNoel@users.noreply.github.com"
-          git add data/items.json
-          if git diff --cached --quiet; then
-            echo "No changes"
-          else
-            git commit -m "data: update items $(date -u +%Y-%m-%dT%H:%MZ)"
-            git push
-          fi
+      - name: Save data
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: data/items.json
+          key: items-${{ github.run_id }}
       - name: Assemble site
         run: |
           mkdir -p _site/data
@@ -46,7 +47,7 @@ jobs:
           path: _site
 
   deploy:
-    needs: fetch
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       pages: write

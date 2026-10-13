@@ -8,7 +8,7 @@ Automated End-User Computing news aggregator: Citrix/NetScaler, Omnissa & VMware
 - `sources.yml` – feeds, keyword searches, tag keyword map, KEV vendor filter, curated X accounts.
 - `scripts/fetch.py` – fetches all feeds (failures are logged and skipped), tags items, de-duplicates by URL and normalized title, and keeps a 30-day rolling window in `data/items.json`.
 - `site/` – static HTML/JS/CSS (filters, search, Security lane, X / Community).
-- `.github/workflows/update.yml` – runs every 4 hours (and on demand), commits `data/items.json` if it changed, and deploys to GitHub Pages.
+- `.github/workflows/update.yml` – runs every 4 hours (and on demand), keeps `data/items.json` between runs via the Actions cache (not committed), and deploys to GitHub Pages.
 
 ## Add a feed
 Append to `feeds:` in `sources.yml`:
