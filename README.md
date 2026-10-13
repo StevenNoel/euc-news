@@ -9,6 +9,11 @@ Automated End-User Computing news aggregator: Citrix/NetScaler, Omnissa & VMware
 - `scripts/fetch.py` – fetches all feeds (failures are logged and skipped), tags items, de-duplicates by URL and normalized title, and keeps a 30-day rolling window in `data/items.json`.
 - `site/` – static HTML/JS/CSS news layout: Top Stories (scored and clustered with related coverage), topic sections (Security & Vulnerabilities, Virtualization & VDI, Microsoft & Windows, Cloud & M365, Endpoints & Management), an Outages & status panel, Community / X, vendor filter chips, search, light/dark.
 
+### Security & de-duplication
+- Security keeps only high-impact items: CISA KEV entries for tracked vendors added in the window, MSRC CVEs that are Critical, exploited or publicly disclosed (CVRF API), and news mentioning zero-day / exploited / critical / CVSS 9+ / ransomware / breach / RCE. Capped at 40 story clusters.
+- Duplicates are merged on normalized URL (no scheme, `www.`, tracking params or trailing slash; Google News/Bing redirects resolved) or fuzzy title match (Jaccard ≥ 0.8 after removing publisher suffix and stopwords). Merged copies become "related coverage".
+- Stories are clustered by title similarity (≥ 0.5), shared CVE ID, or shared KB number; each cluster appears once on the page, in its lead story's section, and Top Stories are not repeated below.
+
 ### Ranking & thumbnails
 `fetch.py` scores each story by recency (36h half-life), vendor relevance, multi-publisher coverage (title clustering), security severity (KEV/zero-day/critical), trusted sources, and a **Citrix/NetScaler boost**. Thumbnails come from feed media, Bing `News:Image`, or the article's `og:image` (capped per run). Google News redirect links are resolved to the publisher (best effort, capped), and Bing/publisher copies are preferred when de-duplicating.
 - `.github/workflows/update.yml` – runs every 4 hours (and on demand), keeps `data/items.json` between runs via the Actions cache (not committed), and deploys to GitHub Pages.

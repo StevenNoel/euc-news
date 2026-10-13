@@ -24,8 +24,8 @@
   const tags = (it) => it.vendors.slice(0, 3).map((v) => `<span class="vtag${v === "citrix" || v === "netscaler" ? "" : ""}">${esc(VENDORS[v] || v)}</span>`).join("") +
     (it.security && /critical|zero-day|0-day|exploit/i.test(it.title) ? `<span class="vtag hot">Exploited/critical</span>` : "");
   const meta = (it) => `<div class="meta"><span class="src">${esc(it.source)}</span><span>·</span><time datetime="${esc(it.published)}" title="${esc(new Date(it.published).toLocaleString())}">${ago(it.published)}</time>${tags(it)}</div>`;
-  const big = (it, rel = []) => link(it, "big", `${img(it)}<h3>${esc(it.title)}</h3>${it.summary ? `<p>${esc(it.summary)}</p>` : ""}${meta(it)}`) + related(rel);
-  const med = (it, rel = []) => `<div>${link(it, "med", `<div><h3>${esc(it.title)}</h3>${meta(it)}</div>${img(it)}`)}${related(rel)}</div>`;
+  const big = (it, rel = []) => link(it, "big", `${img(it)}<h3>${esc(it.title)}</h3>${it.summary ? `<p>${esc(it.summary)}</p>` : ""}${meta(it)}`) + related([...rel, ...(it.related || [])]);
+  const med = (it, rel = []) => `<div>${link(it, "med", `<div><h3>${esc(it.title)}</h3>${meta(it)}</div>${img(it)}`)}${related([...rel, ...(it.related || [])])}</div>`;
   const row = (it) => link(it, "row", `<div><h4>${esc(it.title)}</h4>${meta(it)}</div>${img(it)}`);
   const related = (rel) => rel.length ? `<ul class="related" aria-label="Related coverage">${rel.slice(0, 3).map((r) =>
     `<li><a href="${esc(safe(r.link) || "#")}" target="_blank" rel="noopener noreferrer"><b>${esc(r.source)}</b>${esc(r.title)}</a></li>`).join("")}</ul>` : "";

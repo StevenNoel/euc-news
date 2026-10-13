@@ -48,7 +48,8 @@ def clean_url(u):
     try:
         p = urlparse(u)
         q = [(k, v) for k, v in parse_qsl(p.query) if not TRACKING.match(k)]
-        return urlunparse((p.scheme, p.netloc.lower(), p.path.rstrip("/"), "", urlencode(q), ""))
+        host = p.netloc.lower().removeprefix("www.").removeprefix("m.")
+        return urlunparse(("", host, p.path.rstrip("/"), "", urlencode(sorted(q)), "")).lstrip("/")
     except Exception:
         return u
 
@@ -191,6 +192,73 @@ def search_tags(feed, matched):
     return ftags | matched
 
 
+SEC_RE = re.compile(r"zero[- ]day|0-day|actively exploited|exploited|in the wild|critical|cvss(?: score)?(?: of)?:? ?(?:9(?:\.\d)?|10(?:\.0)?)\b|ransomware|breach|\\brce\\b|remote code execution|emergency (?:fix|patch)", re.I)
+CVE_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.I)
+KB_RE = re.compile(r"\bKB\d{6,8}\b", re.I)
+STOP = set("a an the and or of for to in on at by with from as is are was were be been it its this that these those how why what who new now after over into about via vs your you our we their his her not can will has have had more than out up off".split())
+SEC_CAP = 40  # max Security clusters kept
+
+
+def title_tokens(t):
+    t = re.sub(r"\s+[-|–]\s+[^-|–]{2,60}$", "", t or "")
+    return {w for w in re.sub(r"[^a-z0-9]+", " ", t.lower()).split() if w not in STOP and len(w) > 1}
+
+
+def jacc(a, b):
+    return len(a & b) / len(a | b) if a and b else 0.0
+
+
+class UF:
+    def __init__(self, n): self.p = list(range(n))
+    def find(self, x):
+        while self.p[x] != x:
+            self.p[x] = self.p[self.p[x]]; x = self.p[x]
+        return x
+    def union(self, a, b):
+        a, b = self.find(a), self.find(b)
+        if a != b: self.p[max(a, b)] = min(a, b)
+
+
+def fetch_msrc(feed, window_start):
+    """MSRC CVRF API: keep only Critical, exploited, or publicly disclosed CVEs released in the window."""
+    ups = get(feed["url"]).json().get("value", [])
+    docs = [u for u in ups if re.match(r"^\d{4}-[A-Z][a-z]{2}$", u.get("ID", ""))
+            and (u.get("CurrentReleaseDate") or "") >= window_start.strftime("%Y-%m-%d")]
+    out = []
+    for d in sorted(docs, key=lambda u: u["CurrentReleaseDate"], reverse=True)[:2]:
+        r = requests.get(d["CvrfUrl"], headers={"User-Agent": UA, "Accept": "application/json"}, timeout=90)
+        r.raise_for_status()
+        for v in r.json().get("Vulnerability", []):
+            cve = v.get("CVE") or ""
+            if not cve.startswith("CVE-"):
+                continue
+            sev = {(t.get("Description") or {}).get("Value") for t in v.get("Threats", []) if t.get("Type") == 3}
+            ex = " ".join((t.get("Description") or {}).get("Value") or "" for t in v.get("Threats", []) if t.get("Type") == 1)
+            exploited, disclosed = "Exploited:Yes" in ex, "Publicly Disclosed:Yes" in ex
+            if not ("Critical" in sev or exploited or disclosed):
+                continue
+            rel = None
+            for h in v.get("RevisionHistory") or []:
+                try:
+                    rel = min(rel or "9", h["Date"][:19])
+                except Exception:
+                    pass
+            try:
+                dt = datetime.strptime(rel, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+            except Exception:
+                continue
+            if dt < window_start:
+                continue
+            score = max([s.get("BaseScore") or 0 for s in v.get("CVSSScoreSets") or []] or [0])
+            flags = [x for x, on in (("Exploited", exploited), ("Publicly disclosed", disclosed), ("Critical", "Critical" in sev)) if on]
+            title = (v.get("Title") or {}).get("Value") or cve
+            out.append(dict(title=f"{cve}: {title}", link=f"https://msrc.microsoft.com/update-guide/vulnerability/{cve}",
+                            summary=f"{', '.join(flags)} · CVSS {score}", source="MSRC", published=dt, undated=False,
+                            tags=set(feed.get("tags", [])) | {"windows"} if "Windows" in title else set(feed.get("tags", [])),
+                            security=True, sev_hint=("exploited" if exploited else "critical"), image=None))
+    return out
+
+
 def get(url):
     r = requests.get(url, headers={"User-Agent": UA}, timeout=TIMEOUT)
     r.raise_for_status()
@@ -276,7 +344,8 @@ def main():
     status, new = [], []
     for feed in cfg.get("feeds", []):
         try:
-            items = fetch_kev(feed, vendors) if feed["type"] == "kev" else fetch_rss(feed, tag_map)
+            items = (fetch_kev(feed, vendors) if feed["type"] == "kev" else
+                     fetch_msrc(feed, CUTOFF) if feed["type"] == "msrc" else fetch_rss(feed, tag_map))
             status.append({"name": feed["name"], "ok": True, "count": len(items)})
             new.extend(items)
             print(f"OK   {len(items):4d}  {feed['name']}")
@@ -316,8 +385,6 @@ def main():
             pub = NOW
         it["published"] = pub.strftime("%Y-%m-%dT%H:%M:%SZ")
         it["tags"] = sorted(it["tags"])
-        if "security" in it["tags"] and not it.get("outage"):
-            it["security"] = True
         add(it)
 
     # Resolve Google News redirects (capped) so we can link to and fetch images from publishers
@@ -343,43 +410,119 @@ def main():
             if img:
                 it["image"] = img
     print(f"og:image: tried {len(need)}, found {sum(1 for i in need if i.get('image'))}")
-    for i in by_key.values():
-        i.pop("category", None)
-        i.setdefault("image", None)
-        i.setdefault("sources", [])
-        i["section"] = section_of(i)
-        i["vendors"] = [t for t in VENDOR_TAGS if t in i["tags"]]
-
+    stats = {"collected": len(new) + len(existing), "after_first_pass": len(by_key)}
     cutoff = CUTOFF.strftime("%Y-%m-%dT%H:%M:%SZ")
-    items = sorted((i for i in by_key.values() if i["published"] >= cutoff),
-                   key=lambda i: i["published"], reverse=True)
-    # Cluster near-duplicate stories (token Jaccard) and score for Top Stories
-    toks = {i["id"]: tokens(i["title"]) for i in items}
+    items = [i for i in by_key.values() if i["published"] >= cutoff]
+    stats["in_window_before_dedupe"] = len(items)
+
+    # --- Security: only critical / exploited / high-impact ---
+    kept = []
     for i in items:
-        i["cluster"] = i["id"]
-    for a_idx, a in enumerate(items):
-        if a["cluster"] != a["id"]:
+        i.pop("category", None)
+        i.setdefault("image", None); i.setdefault("sources", []); i.setdefault("related", [])
+        i["tags"] = sorted(set(i["tags"]) - {"security"})
+        if i["source"] in ("CISA KEV", "MSRC"):
+            i["security"] = True
+        elif not i.get("outage"):
+            i["security"] = bool(SEC_RE.search(f"{i['title']} {i['summary']}"))
+        i["vendors"] = [t for t in VENDOR_TAGS if t in i["tags"]]
+        if i["security"]:
+            i["tags"] = sorted(set(i["tags"]) | {"security"})
+        elif not i.get("outage") and not i["vendors"]:  # demoted from Security and no EUC vendor -> drop
             continue
-        ta = toks[a["id"]]
-        for b in items[a_idx + 1:]:
-            tb = toks[b["id"]]
-            if b["cluster"] == b["id"] and ta and tb and len(ta & tb) / len(ta | tb) >= 0.45:
-                b["cluster"] = a["id"]
-    srcs = {}
-    for i in items:  # coverage = distinct publishers in a cluster
-        srcs.setdefault(i["cluster"], set()).update([i["source"], *i["sources"]])
-    size = {k: len(v) for k, v in srcs.items()}
+        if i["source"] == "MSRC Security Update Guide":  # legacy RSS items from cache
+            continue
+        kept.append(i)
+    items = kept
+
+    # --- Strong dedupe: normalized URL or fuzzy title (Jaccard >= 0.8) -> merge into one item ---
+    def quality(i):
+        return (not is_gn(i), bool(i["image"]), any(t in i["source"].lower() for t in TRUSTED), -len(i["title"]))
+    toks = [title_tokens(i["title"]) for i in items]
+    uf = UF(len(items))
+    by_url = {}
+    for n, i in enumerate(items):
+        k = clean_url(i["link"])
+        if k in by_url:
+            uf.union(by_url[k], n)
+        else:
+            by_url[k] = n
+    for x in range(len(items)):
+        for y in range(x + 1, len(items)):
+            ca = {c.upper() for c in CVE_RE.findall(items[x]["title"])}
+            cb = {c.upper() for c in CVE_RE.findall(items[y]["title"])}
+            if jacc(toks[x], toks[y]) >= 0.8 and not (ca and cb and ca != cb):
+                uf.union(x, y)
+    groups = {}
+    for n in range(len(items)):
+        groups.setdefault(uf.find(n), []).append(items[n])
+    merged = []
+    for g in groups.values():
+        g.sort(key=quality, reverse=True)
+        keep = g[0]
+        for o in g[1:]:
+            keep["tags"] = sorted(set(keep["tags"]) | set(o["tags"]))
+            keep["security"] = keep["security"] or o["security"]
+            keep["outage"] = keep.get("outage") or o.get("outage", False)
+            keep["image"] = keep["image"] or o["image"]
+            keep["published"] = min(keep["published"], o["published"]) if not keep.get("undated") else o["published"]
+            for r in [o] + o.get("related", []):
+                if r["source"] != keep["source"] and all(r["link"] != x["link"] for x in keep["related"]):
+                    keep["related"].append({"title": r["title"], "link": r["link"], "source": r["source"]})
+            for src in [o["source"], *o["sources"]]:
+                if src != keep["source"] and src not in keep["sources"]:
+                    keep["sources"].append(src)
+        keep["vendors"] = [t for t in VENDOR_TAGS if t in keep["tags"]]
+        merged.append(keep)
+    stats["duplicates_removed"] = len(items) - len(merged)
+    items = sorted(merged, key=lambda i: i["published"], reverse=True)
+
+    # --- Clusters (related coverage): looser title match, same CVE, or same KB ---
+    toks = [title_tokens(i["title"]) for i in items]
+    keys = [set(m.upper() for m in CVE_RE.findall(i["title"]) + KB_RE.findall(i["title"])) for i in items]
+    uf = UF(len(items))
+    for x in range(len(items)):
+        for y in range(x + 1, len(items)):
+            cx, cy = {k for k in keys[x] if k.startswith("CVE")}, {k for k in keys[y] if k.startswith("CVE")}
+            if cx and cy and not (cx & cy):
+                continue  # different CVEs are different stories even if titles look alike
+            if (keys[x] & keys[y]) or jacc(toks[x], toks[y]) >= 0.5:
+                uf.union(x, y)
+    members = {}
+    for n, i in enumerate(items):
+        members.setdefault(uf.find(n), []).append(i)
+
     for i in items:
-        age_h = 48 if i.get("undated") else (NOW - datetime.strptime(i["published"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)).total_seconds() / 3600
-        txt = f"{i['title']} {i['summary']}".lower()
-        sev = 3 if i["source"] == "CISA KEV" or re.search(r"zero-day|0-day|actively exploited|critical", txt) else (1.5 if i["security"] else 0)
-        citrix = 5 if {"citrix", "netscaler"} & set(i["vendors"]) else 0  # Steve: boost Citrix highest
-        trust = 1.5 if any(t in i["source"].lower() for t in TRUSTED) else 0
-        i["score"] = round(10 * 0.5 ** (age_h / 36) + 1.2 * len(i["vendors"][:3]) + 2 * min(size[i["cluster"]] - 1, 4)
-                           + sev + trust + citrix + (1 if i["image"] else 0), 2)
+        i["section"] = section_of(i)
+    for root, g in members.items():
+        cov = {s for i in g for s in [i["source"], *i["sources"]]}
+        for i in g:
+            age_h = 48 if i.get("undated") else (NOW - datetime.strptime(i["published"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)).total_seconds() / 3600
+            txt = f"{i['title']} {i['summary']}".lower()
+            sev = 4 if i["source"] == "CISA KEV" or re.search(r"zero[- ]day|0-day|exploited", txt) else (2 if i["security"] else 0)
+            citrix = 5 if {"citrix", "netscaler"} & set(i["vendors"]) else 0  # Steve: boost Citrix highest
+            trust = 1.5 if any(t in i["source"].lower() for t in TRUSTED) else 0
+            i["score"] = round(10 * 0.5 ** (age_h / 36) + 1.2 * len(i["vendors"][:3]) + 2 * min(len(cov) - 1, 4)
+                               + sev + trust + citrix + (1 if i["image"] else 0), 2)
+        g.sort(key=lambda i: (i["score"], bool(i["image"])), reverse=True)
+        lead = g[0]
+        for i in g:  # one cluster -> one section (the lead's)
+            i["cluster"] = lead["id"]
+            i["section"] = lead["section"]
+
+    # --- Cap Security ---
+    sec_clusters = sorted({i["cluster"] for i in items if i["section"] == "security"},
+                          key=lambda c: -max(x["score"] for x in items if x["cluster"] == c))
+    drop = set(sec_clusters[SEC_CAP:])
+    stats["security_clusters_capped"] = len(drop)
+    items = [i for i in items if i["cluster"] not in drop]
+    stats["total"] = len(items)
+    stats["security_items"] = sum(1 for i in items if i["section"] == "security")
+    stats["clusters"] = len({i["cluster"] for i in items})
+    print("stats:", stats)
 
     out = {"updated": NOW.strftime("%Y-%m-%dT%H:%M:%SZ"), "window_days": WINDOW_DAYS,
-           "count": len(items), "feeds": status, "x_accounts": cfg.get("x_accounts", []),
+           "count": len(items), "stats": stats, "feeds": status, "x_accounts": cfg.get("x_accounts", []),
            "items": items}
     DATA.parent.mkdir(parents=True, exist_ok=True)
     DATA.write_text(json.dumps(out, indent=1, ensure_ascii=False))

@@ -1,6 +1,7 @@
 # EUC News sources. Edit this file to add feeds, keyword searches, tags, or X accounts.
 # type: rss    -> a normal RSS/Atom feed
 # type: search -> a keyword news search (Google News RSS / Bing News RSS URL)
+# type: msrc   -> MSRC CVRF API; keeps only Critical, exploited or publicly disclosed CVEs
 # type: kev    -> CISA Known Exploited Vulnerabilities JSON, filtered by kev_vendors
 # security: true -> items always show in the Security section
 # outage: true -> items go to the Outages & status panel
@@ -22,7 +23,7 @@ feeds:
   - {name: Carl Stalhood, url: "https://www.carlstalhood.com/feed/", type: rss, tags: [citrix, community]}
   # --- Security lane ---
   - {name: CISA KEV, url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json", type: kev, tags: [security, kev], security: true}
-  - {name: MSRC Security Update Guide, url: "https://api.msrc.microsoft.com/update-guide/rss", type: rss, tags: [security, microsoft], security: true, max_items: 60}
+  - {name: MSRC (Critical / exploited / disclosed), url: "https://api.msrc.microsoft.com/cvrf/v3.0/updates", type: msrc, tags: [security, microsoft], security: true}
   - {name: BleepingComputer, url: "https://www.bleepingcomputer.com/feed/", type: rss, tags: [security], security: true, require_keywords: true}
   - {name: "Born's Tech and Windows World", url: "https://borncity.com/win/feed/", type: rss, tags: [windows, patch], require_keywords: true}
   - {name: The Register Security, url: "https://www.theregister.com/security/headlines.atom", type: rss, tags: [security], security: true, require_keywords: true}
