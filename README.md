@@ -7,7 +7,10 @@ Automated End-User Computing news aggregator: Citrix/NetScaler, Omnissa & VMware
 ## How it works
 - `sources.yml` – feeds, keyword searches, tag keyword map, KEV vendor filter, curated X accounts.
 - `scripts/fetch.py` – fetches all feeds (failures are logged and skipped), tags items, de-duplicates by URL and normalized title, and keeps a 30-day rolling window in `data/items.json`.
-- `site/` – static HTML/JS/CSS (filters, search, Security lane, X / Community).
+- `site/` – static HTML/JS/CSS news layout: Top Stories (scored and clustered with related coverage), topic sections (Security & Vulnerabilities, Virtualization & VDI, Microsoft & Windows, Cloud & M365, Endpoints & Management), an Outages & status panel, Community / X, vendor filter chips, search, light/dark.
+
+### Ranking & thumbnails
+`fetch.py` scores each story by recency (36h half-life), vendor relevance, multi-publisher coverage (title clustering), security severity (KEV/zero-day/critical), trusted sources, and a **Citrix/NetScaler boost**. Thumbnails come from feed media, Bing `News:Image`, or the article's `og:image` (capped per run). Google News redirect links are resolved to the publisher (best effort, capped), and Bing/publisher copies are preferred when de-duplicating.
 - `.github/workflows/update.yml` – runs every 4 hours (and on demand), keeps `data/items.json` between runs via the Actions cache (not committed), and deploys to GitHub Pages.
 
 ## Add a feed
@@ -15,7 +18,7 @@ Append to `feeds:` in `sources.yml`:
 ```yaml
   - {name: My Blog, url: "https://example.com/feed/", type: rss, tags: [citrix]}
 ```
-Optional keys: `security: true` (always in Security lane), `require_keywords: true` (only keep items matching a vendor tag – good for broad feeds), `max_items: 50`.
+Optional keys: `security: true` (Security section), `outage: true` (Outages & status panel), `unreliable_dates: true`, `require_keywords: true` (only keep items matching a vendor tag – good for broad feeds), `max_items: 50`.
 Check it first: `curl -sIL https://example.com/feed/`.
 
 ## Add a keyword search

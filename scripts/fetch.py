@@ -27,13 +27,20 @@ IMG_RE = re.compile(r'<img[^>]+src=["\']([^"\']+)', re.I)
 OG_RE = re.compile(r'<meta[^>]+(?:property|name)=["\'](?:og:image|twitter:image)["\'][^>]*>', re.I)
 CONTENT_RE = re.compile(r'content=["\']([^"\']+)', re.I)
 
-# Dashboard category per item, first match wins (security handled separately).
-CATEGORIES = [
-    ("citrix", {"citrix", "netscaler"}), ("fslogix", {"fslogix"}), ("avd-w365", {"avd", "w365"}),
-    ("azure-local", {"azure-local"}), ("m365", {"m365"}), ("omnissa-vmware", {"omnissa", "vmware"}),
-    ("controlup", {"controlup"}), ("igel", {"igel"}), ("nutanix", {"nutanix"}), ("unicon", {"unicon"}),
-    ("microsoft", {"microsoft", "windows", "patch"}),
+GN_CAP = 150          # max Google News redirect resolutions per run
+BROWSER_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36"
+
+# Topic sections, first match wins (security is decided separately).
+SECTIONS = [
+    ("virtualization", {"citrix", "netscaler", "vmware", "omnissa", "nutanix", "xenserver", "avd", "w365", "fslogix"}),
+    ("endpoints", {"igel", "controlup", "unicon", "intune"}),
+    ("cloud", {"m365", "azure-local"}),
+    ("windows", {"windows", "patch", "microsoft"}),
 ]
+VENDOR_TAGS = ["citrix", "netscaler", "xenserver", "vmware", "omnissa", "nutanix", "avd", "w365", "fslogix",
+               "microsoft", "windows", "m365", "azure-local", "intune", "igel", "controlup", "unicon"]
+TRUSTED = ("cisa", "msrc", "microsoft", "bleepingcomputer", "the register", "born", "citrix", "omnissa",
+           "broadcom", "vmware", "nutanix", "igel", "controlup", "securityweek", "ars technica", "carl stalhood")
 TRACKING = re.compile(r"^(utm_|fbclid|gclid|mc_|ocid|cmpid)", re.I)
 
 
@@ -134,6 +141,56 @@ def categorize(tags):
     return "other"
 
 
+def resolve_gn(link):
+    """Best-effort: turn a news.google.com/rss/articles/... redirect into the publisher URL."""
+    try:
+        aid = urlparse(link).path.rsplit("/", 1)[-1]
+        h = requests.get(f"https://news.google.com/rss/articles/{aid}", headers={"User-Agent": BROWSER_UA}, timeout=8).text
+        sg = re.search(r'data-n-a-sg="([^"]+)"', h); ts = re.search(r'data-n-a-ts="([^"]+)"', h)
+        if not (sg and ts):
+            return None
+        req = ["Fbv4je", '["garturlreq",[["X","X",["X","X"],null,null,1,1,"US:en",null,1,null,null,null,null,null,0,1],'
+               f'"X","X",1,[1,1,1],1,1,null,0,0,null,0],"{aid}",{ts.group(1)},"{sg.group(1)}"]']
+        r = requests.post("https://news.google.com/_/DotsSplashUi/data/batchexecute",
+                          headers={"User-Agent": BROWSER_UA, "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"},
+                          data={"f.req": json.dumps([[req]])}, timeout=8)
+        u = json.loads(json.loads(r.text.split("\n\n")[1])[0][2])[1]
+        return u if isinstance(u, str) and u.startswith("http") else None
+    except Exception:
+        return None
+
+
+def is_gn(it):
+    return "news.google.com" in it["link"]
+
+
+def section_of(it):
+    if it.get("outage"):
+        return "outages"
+    if it.get("security"):
+        return "security"
+    tags = set(it["tags"])
+    for sec, keys in SECTIONS:
+        if keys & tags:
+            return sec
+    return "windows"
+
+
+def tokens(t):
+    return {w for w in norm_title(t).split() if len(w) > 3}
+
+
+GENERIC = {"security", "microsoft", "windows", "patch", "outage"}
+
+
+def search_tags(feed, matched):
+    """Keyword-search results: trust the text match over the query's tags when the text names a product."""
+    ftags = set(feed.get("tags", []))
+    if feed["type"] == "search" and matched - GENERIC:
+        return matched | (ftags & GENERIC)
+    return ftags | matched
+
+
 def get(url):
     r = requests.get(url, headers={"User-Agent": UA}, timeout=TIMEOUT)
     r.raise_for_status()
@@ -154,15 +211,31 @@ def fetch_rss(feed, tag_map):
         source = feed["name"]
         if feed["type"] == "search":
             src = e.get("source")
-            if isinstance(src, dict) and src.get("title"):
-                source = f"{src['title']} (via {feed['name'].split(':')[0]})"
+            pub = (src.get("title") if isinstance(src, dict) else None) or e.get("news_source")
+            if pub:
+                source = pub
+                if title.endswith(f" - {pub}"):
+                    title = title[: -len(pub) - 3].strip()
+            else:
+                title = re.sub(r"\s+-\s+[^-]{2,60}$", "", title)
+        if feed.get("outage"):
+            # status feeds: skip scheduled maintenance and undated entries; news: require outage wording
+            if not to_dt(e) or re.search(r"maintenance|\([^)]+\) on \d{4}-\d{2}-\d{2}", title, re.I):
+                continue
+            if feed["type"] == "search" and not re.search(r"outage|(goes|went|is|was|are) down\b|disruption|incident|degraded", title, re.I):
+                continue
+        if source.startswith("http"):
+            source = urlparse(source).netloc.removeprefix("www.") or source
+        if norm_title(summary)[:40] == norm_title(title)[:40]:  # search feeds echo the title as summary
+            summary = ""
         matched = tag_text(f"{title} {summary}", tag_map)
         if feed.get("require_keywords") and not (matched - {"security", "microsoft", "windows", "patch"}):
             # generic feeds: keep only items that hit a specific EUC vendor/product tag
             continue
         out.append(dict(title=title, link=link, summary=summary, source=source,
-                        published=to_dt(e), tags=set(feed.get("tags", [])) | matched,
-                        security=bool(feed.get("security")), image=entry_thumb(e)))
+                        published=to_dt(e), undated=to_dt(e) is None or bool(feed.get("unreliable_dates")), tags=search_tags(feed, matched),
+                        security=bool(feed.get("security")) and not feed.get("outage"),
+                        outage=bool(feed.get("outage")), image=entry_thumb(e)))
     return out
 
 
@@ -219,8 +292,16 @@ def main():
         if dup:  # merge tags/security; keep first-seen
             dup["tags"] = sorted(set(dup["tags"]) | set(it["tags"]))
             dup["security"] = dup["security"] or it["security"]
-            if not dup.get("image") and it.get("image"):
+            dup["outage"] = dup.get("outage") or it.get("outage", False)
+            if is_gn(dup) and not is_gn(it):  # prefer publisher/Bing copy over Google News
+                for k in ("link", "source", "image", "title"):
+                    if it.get(k):
+                        dup[k] = it[k]
+            elif not dup.get("image") and it.get("image"):
                 dup["image"] = it["image"]
+            dup.setdefault("sources", [])
+            if it["source"] not in dup["sources"] and it["source"] != dup["source"]:
+                dup["sources"].append(it["source"])
             return
         it["id"] = key
         by_key[key] = it
@@ -235,9 +316,20 @@ def main():
             pub = NOW
         it["published"] = pub.strftime("%Y-%m-%dT%H:%M:%SZ")
         it["tags"] = sorted(it["tags"])
-        if "security" in it["tags"]:
+        if "security" in it["tags"] and not it.get("outage"):
             it["security"] = True
         add(it)
+
+    # Resolve Google News redirects (capped) so we can link to and fetch images from publishers
+    gn = [i for i in by_key.values() if is_gn(i) and not i.get("gn_tried")]
+    gn.sort(key=lambda i: i["published"], reverse=True)
+    gn = gn[:GN_CAP]
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        for it, u in zip(gn, ex.map(lambda i: resolve_gn(i["link"]), gn)):
+            it["gn_tried"] = True
+            if u:
+                it["link"] = u
+    print(f"google news: resolved {sum(1 for i in gn if not is_gn(i))}/{len(gn)}")
 
     # og:image only for items lacking a thumbnail, capped and parallel
     need = [i for i in by_key.values() if not i.get("image") and not i.get("og_tried")
@@ -252,12 +344,40 @@ def main():
                 it["image"] = img
     print(f"og:image: tried {len(need)}, found {sum(1 for i in need if i.get('image'))}")
     for i in by_key.values():
-        i["category"] = categorize(i["tags"])
+        i.pop("category", None)
         i.setdefault("image", None)
+        i.setdefault("sources", [])
+        i["section"] = section_of(i)
+        i["vendors"] = [t for t in VENDOR_TAGS if t in i["tags"]]
 
     cutoff = CUTOFF.strftime("%Y-%m-%dT%H:%M:%SZ")
     items = sorted((i for i in by_key.values() if i["published"] >= cutoff),
                    key=lambda i: i["published"], reverse=True)
+    # Cluster near-duplicate stories (token Jaccard) and score for Top Stories
+    toks = {i["id"]: tokens(i["title"]) for i in items}
+    for i in items:
+        i["cluster"] = i["id"]
+    for a_idx, a in enumerate(items):
+        if a["cluster"] != a["id"]:
+            continue
+        ta = toks[a["id"]]
+        for b in items[a_idx + 1:]:
+            tb = toks[b["id"]]
+            if b["cluster"] == b["id"] and ta and tb and len(ta & tb) / len(ta | tb) >= 0.45:
+                b["cluster"] = a["id"]
+    srcs = {}
+    for i in items:  # coverage = distinct publishers in a cluster
+        srcs.setdefault(i["cluster"], set()).update([i["source"], *i["sources"]])
+    size = {k: len(v) for k, v in srcs.items()}
+    for i in items:
+        age_h = 48 if i.get("undated") else (NOW - datetime.strptime(i["published"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)).total_seconds() / 3600
+        txt = f"{i['title']} {i['summary']}".lower()
+        sev = 3 if i["source"] == "CISA KEV" or re.search(r"zero-day|0-day|actively exploited|critical", txt) else (1.5 if i["security"] else 0)
+        citrix = 5 if {"citrix", "netscaler"} & set(i["vendors"]) else 0  # Steve: boost Citrix highest
+        trust = 1.5 if any(t in i["source"].lower() for t in TRUSTED) else 0
+        i["score"] = round(10 * 0.5 ** (age_h / 36) + 1.2 * len(i["vendors"][:3]) + 2 * min(size[i["cluster"]] - 1, 4)
+                           + sev + trust + citrix + (1 if i["image"] else 0), 2)
+
     out = {"updated": NOW.strftime("%Y-%m-%dT%H:%M:%SZ"), "window_days": WINDOW_DAYS,
            "count": len(items), "feeds": status, "x_accounts": cfg.get("x_accounts", []),
            "items": items}

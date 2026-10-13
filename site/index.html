@@ -4,28 +4,40 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>EUC News – End-User Computing dashboard</title>
+<meta name="description" content="End-user computing and sysadmin news: Citrix, Omnissa, Microsoft, AVD, security and outages.">
+<title>EUC News</title>
 <link rel="stylesheet" href="style.css">
 <script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
 <body>
-<header class="top">
-  <div class="bar">
-    <a class="brand" href="./"><span class="logo">EUC</span><span>News</span></a>
-    <input id="q" type="search" placeholder="Search news…" aria-label="Search news" autocomplete="off">
-    <select id="range" aria-label="Time range">
-      <option value="1">24h</option><option value="3">3 days</option>
-      <option value="7" selected>7 days</option><option value="30">30 days</option>
-    </select>
-    <button id="theme" class="icon" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="#top" data-tab="top"><span class="mark" aria-hidden="true"></span>EUC News</a>
+    <label class="search"><span class="sr">Search</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 0 1 5.9 12.1l4.2 4.2-1.4 1.4-4.2-4.2A7.5 7.5 0 1 1 10.5 3Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z"/></svg>
+      <input id="q" type="search" placeholder="Search topics, vendors, CVEs…" autocomplete="off">
+    </label>
+    <button id="theme" class="iconbtn" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg>
+    </button>
   </div>
-  <div class="bar sub">
-    <nav id="chips" class="chips" aria-label="Vendor filters"></nav>
-    <span id="updated" class="muted small">Loading…</span>
-  </div>
+  <nav class="tabs" id="tabs" aria-label="Sections"></nav>
 </header>
-<main id="grid" class="grid" aria-live="polite"></main>
-<footer class="foot muted small">Headlines link to the original publishers · refreshed every 4 hours · <a href="https://github.com/StevenNoel/euc-news">source on GitHub</a></footer>
+
+<div class="page">
+  <div class="filters">
+    <div id="chips" class="chips" role="group" aria-label="Filter by vendor"></div>
+    <span id="updated" class="updated">Loading…</span>
+  </div>
+  <div class="layout">
+    <main id="main" aria-live="polite"></main>
+    <aside class="side">
+      <section class="panel" id="outages"></section>
+      <section class="panel" id="community"></section>
+    </aside>
+  </div>
+</div>
+<footer class="foot">Headlines link to the original publishers. Refreshed every 4 hours. <a href="https://github.com/StevenNoel/euc-news">Source on GitHub</a></footer>
 <script src="app.js"></script>
 </body>
 </html>

@@ -2,7 +2,9 @@
 # type: rss    -> a normal RSS/Atom feed
 # type: search -> a keyword news search (Google News RSS / Bing News RSS URL)
 # type: kev    -> CISA Known Exploited Vulnerabilities JSON, filtered by kev_vendors
-# security: true -> items always show in the Security lane
+# security: true -> items always show in the Security section
+# outage: true -> items go to the Outages & status panel
+# unreliable_dates: true -> feed stamps every item 'now'; ranked as older in Top Stories
 
 feeds:
   # --- Vendor / product blogs ---
@@ -12,7 +14,7 @@ feeds:
   - {name: Windows IT Pro Blog, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=Windows-ITPro-blog", type: rss, tags: [windows, microsoft]}
   - {name: Azure Local Blog, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=AzureStackBlog", type: rss, tags: [azure-local, microsoft]}
   - {name: Microsoft 365 Blog, url: "https://www.microsoft.com/en-us/microsoft-365/blog/feed/", type: rss, tags: [m365, microsoft]}
-  - {name: Microsoft Learn - known issues, url: "https://learn.microsoft.com/api/search/rss?search=%22known+issues%22+Windows&locale=en-us", type: rss, tags: [windows, patch]}
+  - {name: Microsoft Learn - known issues, url: "https://learn.microsoft.com/api/search/rss?search=%22known+issues%22+Windows&locale=en-us", type: rss, tags: [windows, patch], unreliable_dates: true}
   - {name: VMware Blogs (Broadcom), url: "https://blogs.vmware.com/feed", type: rss, tags: [vmware]}
   - {name: ControlUp Blog, url: "https://www.controlup.com/feed/", type: rss, tags: [controlup]}
   - {name: IGEL Blog, url: "https://www.igel.com/feed/", type: rss, tags: [igel]}
@@ -24,7 +26,18 @@ feeds:
   - {name: BleepingComputer, url: "https://www.bleepingcomputer.com/feed/", type: rss, tags: [security], security: true, require_keywords: true}
   - {name: "Born's Tech and Windows World", url: "https://borncity.com/win/feed/", type: rss, tags: [windows, patch], require_keywords: true}
   - {name: The Register Security, url: "https://www.theregister.com/security/headlines.atom", type: rss, tags: [security], security: true, require_keywords: true}
+  # --- Outages & Status (official status feeds; outage: true -> Outages strip) ---
+  - {name: AWS Health, url: "https://status.aws.amazon.com/rss/all.rss", type: rss, tags: [outage, aws], outage: true, max_items: 30}
+  - {name: Azure Status, url: "https://azure.status.microsoft/en-us/status/feed/", type: rss, tags: [outage, azure], outage: true}
+  - {name: Google Cloud Status, url: "https://status.cloud.google.com/en/feed.atom", type: rss, tags: [outage, gcp], outage: true, max_items: 30}
+  - {name: Cloudflare Status, url: "https://www.cloudflarestatus.com/history.atom", type: rss, tags: [outage, cloudflare], outage: true, max_items: 30}
+  - {name: Microsoft 365 Status, url: "https://status.office365.com/api/feed/mac", type: rss, tags: [outage, m365], outage: true}
+  - {name: "Google News: Cloud outages", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=(AWS+OR+Azure+OR+%22Google+Cloud%22+OR+%22Microsoft+365%22+OR+%22Citrix+DaaS%22+OR+Cloudflare+OR+CrowdStrike)+outage", type: search, tags: [outage], outage: true}
+  - {name: "Bing News: Cloud outages", url: "https://www.bing.com/news/search?format=rss&q=cloud+outage", type: search, tags: [outage], outage: true}
+  - {name: "Bing News: Microsoft 365 outage", url: "https://www.bing.com/news/search?format=rss&q=Microsoft+365+outage", type: search, tags: [outage, m365], outage: true}
   # --- Keyword searches ---
+  - {name: "Google News: Intune", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22Microsoft+Intune%22", type: search, tags: [intune, microsoft]}
+  - {name: "Bing News: Intune", url: "https://www.bing.com/news/search?format=rss&q=Microsoft+Intune", type: search, tags: [intune, microsoft]}
   - {name: "Google News: Citrix", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Citrix+%28CVAD+OR+%22Virtual+Apps+and+Desktops%22+OR+StoreFront+OR+%22Citrix+Director%22+OR+DaaS+OR+XenServer%29", type: search, tags: [citrix]}
   - {name: "Bing News: Citrix", url: "https://www.bing.com/news/search?format=rss&q=Citrix+%28CVAD+OR+%22Virtual+Apps+and+Desktops%22+OR+StoreFront+OR+%22Citrix+Director%22+OR+DaaS+OR+XenServer%29", type: search, tags: [citrix]}
   - {name: "Google News: NetScaler", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=NetScaler", type: search, tags: [citrix, netscaler]}
@@ -38,7 +51,7 @@ feeds:
   - {name: "Google News: VMware Horizon / Broadcom EUC", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22VMware+Horizon%22+OR+%28Broadcom+VMware+EUC%29", type: search, tags: [vmware]}
   - {name: "Bing News: VMware Horizon / Broadcom EUC", url: "https://www.bing.com/news/search?format=rss&q=VMware+Horizon", type: search, tags: [vmware]}
   - {name: "Google News: M365", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22Microsoft+365%22+%28Outlook+OR+OneDrive+OR+Teams%29+outage+OR+issue", type: search, tags: [m365, microsoft]}
-  - {name: "Bing News: M365", url: "https://www.bing.com/news/search?format=rss&q=Microsoft+365+outage", type: search, tags: [m365, microsoft]}
+  - {name: "Bing News: M365", url: "https://www.bing.com/news/search?format=rss&q=Microsoft+365+Outlook+Teams", type: search, tags: [m365, microsoft]}
   - {name: "Google News: ControlUp", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=ControlUp", type: search, tags: [controlup]}
   - {name: "Bing News: ControlUp", url: "https://www.bing.com/news/search?format=rss&q=ControlUp", type: search, tags: [controlup]}
   - {name: "Google News: IGEL", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=IGEL+OS", type: search, tags: [igel]}
@@ -64,6 +77,8 @@ kev_vendors: [citrix, netscaler, microsoft, vmware, broadcom, omnissa, nutanix, 
 tag_keywords:
   citrix: [citrix, cvad, "virtual apps and desktops", storefront, "citrix director", daas, xenserver]
   netscaler: [netscaler, "citrix adc", "citrix gateway"]
+  xenserver: [xenserver]
+  intune: [intune, "endpoint manager"]
   unicon: [unicon, elux]
   microsoft: [microsoft]
   fslogix: [fslogix]
