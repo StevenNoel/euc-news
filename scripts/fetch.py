@@ -192,7 +192,7 @@ def search_tags(feed, matched):
     return ftags | matched
 
 
-SEC_RE = re.compile(r"zero[- ]day|0-day|actively exploited|exploited|in the wild|critical|cvss(?: score)?(?: of)?:? ?(?:9(?:\.\d)?|10(?:\.0)?)\b|ransomware|breach|\\brce\\b|remote code execution|emergency (?:fix|patch)", re.I)
+SEC_RE = re.compile(r"zero[- ]day|0-day|actively exploited|exploited|in the wild|critical|cvss(?: score)?(?: of)?:? ?(?:9(?:\.\d)?|10(?:\.0)?)\b|ransomware|breach|\brce\b|remote code execution|emergency (?:fix|patch)", re.I)
 CVE_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.I)
 KB_RE = re.compile(r"\bKB\d{6,8}\b", re.I)
 STOP = set("a an the and or of for to in on at by with from as is are was were be been it its this that these those how why what who new now after over into about via vs your you our we their his her not can will has have had more than out up off".split())
