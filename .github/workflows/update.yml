@@ -1,0 +1,59 @@
+name: Update EUC news
+
+on:
+  schedule:
+    - cron: "17 */4 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: update-and-deploy
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/fetch.py
+      - name: Commit data if changed
+        run: |
+          git config user.name "StevenNoel"
+          git config user.email "StevenNoel@users.noreply.github.com"
+          git add data/items.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "data: update items $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
+      - name: Assemble site
+        run: |
+          mkdir -p _site/data
+          cp -r site/. _site/
+          cp data/items.json _site/data/items.json
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+
+  deploy:
+    needs: fetch
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

@@ -1,0 +1,98 @@
+# EUC News sources. Edit this file to add feeds, keyword searches, tags, or X accounts.
+# type: rss    -> a normal RSS/Atom feed
+# type: search -> a keyword news search (Google News RSS / Bing News RSS URL)
+# type: kev    -> CISA Known Exploited Vulnerabilities JSON, filtered by kev_vendors
+# security: true -> items always show in the Security lane
+
+feeds:
+  # --- Vendor / product blogs ---
+  - {name: Citrix Community Blogs, url: "https://community.citrix.com/rss/1-citrix-blogs.xml", type: rss, tags: [citrix]}
+  - {name: Azure Virtual Desktop Blog, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=AzureVirtualDesktopBlog", type: rss, tags: [avd, microsoft]}
+  - {name: FSLogix Blog, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=FSLogix-Blog", type: rss, tags: [fslogix, microsoft]}
+  - {name: Windows IT Pro Blog, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=Windows-ITPro-blog", type: rss, tags: [windows, microsoft]}
+  - {name: Azure Local Blog, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=AzureStackBlog", type: rss, tags: [azure-local, microsoft]}
+  - {name: Microsoft 365 Blog, url: "https://www.microsoft.com/en-us/microsoft-365/blog/feed/", type: rss, tags: [m365, microsoft]}
+  - {name: Microsoft Learn - known issues, url: "https://learn.microsoft.com/api/search/rss?search=%22known+issues%22+Windows&locale=en-us", type: rss, tags: [windows, patch]}
+  - {name: VMware Blogs (Broadcom), url: "https://blogs.vmware.com/feed", type: rss, tags: [vmware]}
+  - {name: ControlUp Blog, url: "https://www.controlup.com/feed/", type: rss, tags: [controlup]}
+  - {name: IGEL Blog, url: "https://www.igel.com/feed/", type: rss, tags: [igel]}
+  - {name: Nutanix Dev, url: "https://www.nutanix.dev/feed/", type: rss, tags: [nutanix]}
+  - {name: Carl Stalhood, url: "https://www.carlstalhood.com/feed/", type: rss, tags: [citrix, community]}
+  # --- Security lane ---
+  - {name: CISA KEV, url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json", type: kev, tags: [security, kev], security: true}
+  - {name: MSRC Security Update Guide, url: "https://api.msrc.microsoft.com/update-guide/rss", type: rss, tags: [security, microsoft], security: true, max_items: 60}
+  - {name: BleepingComputer, url: "https://www.bleepingcomputer.com/feed/", type: rss, tags: [security], security: true, require_keywords: true}
+  - {name: "Born's Tech and Windows World", url: "https://borncity.com/win/feed/", type: rss, tags: [windows, patch], require_keywords: true}
+  - {name: The Register Security, url: "https://www.theregister.com/security/headlines.atom", type: rss, tags: [security], security: true, require_keywords: true}
+  # --- Keyword searches ---
+  - {name: "Google News: Citrix", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Citrix+%28CVAD+OR+%22Virtual+Apps+and+Desktops%22+OR+StoreFront+OR+%22Citrix+Director%22+OR+DaaS+OR+XenServer%29", type: search, tags: [citrix]}
+  - {name: "Bing News: Citrix", url: "https://www.bing.com/news/search?format=rss&q=Citrix+%28CVAD+OR+%22Virtual+Apps+and+Desktops%22+OR+StoreFront+OR+%22Citrix+Director%22+OR+DaaS+OR+XenServer%29", type: search, tags: [citrix]}
+  - {name: "Google News: NetScaler", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=NetScaler", type: search, tags: [citrix, netscaler]}
+  - {name: "Bing News: NetScaler", url: "https://www.bing.com/news/search?format=rss&q=NetScaler", type: search, tags: [citrix, netscaler]}
+  - {name: "Google News: Unicon", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Unicon+eLux+OR+%22Unicon+Scout%22", type: search, tags: [unicon]}
+  - {name: "Bing News: Unicon", url: "https://www.bing.com/news/search?format=rss&q=Unicon+eLux", type: search, tags: [unicon]}
+  - {name: "Google News: FSLogix", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=FSLogix", type: search, tags: [fslogix, microsoft]}
+  - {name: "Bing News: FSLogix", url: "https://www.bing.com/news/search?format=rss&q=FSLogix", type: search, tags: [fslogix, microsoft]}
+  - {name: "Google News: Omnissa", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Omnissa+OR+%22Omnissa+Horizon%22+OR+%22Workspace+ONE%22", type: search, tags: [omnissa]}
+  - {name: "Bing News: Omnissa", url: "https://www.bing.com/news/search?format=rss&q=Omnissa", type: search, tags: [omnissa]}
+  - {name: "Google News: VMware Horizon / Broadcom EUC", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22VMware+Horizon%22+OR+%28Broadcom+VMware+EUC%29", type: search, tags: [vmware]}
+  - {name: "Bing News: VMware Horizon / Broadcom EUC", url: "https://www.bing.com/news/search?format=rss&q=VMware+Horizon", type: search, tags: [vmware]}
+  - {name: "Google News: M365", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22Microsoft+365%22+%28Outlook+OR+OneDrive+OR+Teams%29+outage+OR+issue", type: search, tags: [m365, microsoft]}
+  - {name: "Bing News: M365", url: "https://www.bing.com/news/search?format=rss&q=Microsoft+365+outage", type: search, tags: [m365, microsoft]}
+  - {name: "Google News: ControlUp", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=ControlUp", type: search, tags: [controlup]}
+  - {name: "Bing News: ControlUp", url: "https://www.bing.com/news/search?format=rss&q=ControlUp", type: search, tags: [controlup]}
+  - {name: "Google News: IGEL", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=IGEL+OS", type: search, tags: [igel]}
+  - {name: "Bing News: IGEL", url: "https://www.bing.com/news/search?format=rss&q=IGEL+OS", type: search, tags: [igel]}
+  - {name: "Google News: Nutanix", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Nutanix+%28AHV+OR+%22Frame%22+OR+EUC+OR+VDI%29", type: search, tags: [nutanix]}
+  - {name: "Bing News: Nutanix", url: "https://www.bing.com/news/search?format=rss&q=Nutanix+%28AHV+OR+%22Frame%22+OR+EUC+OR+VDI%29", type: search, tags: [nutanix]}
+  - {name: "Google News: AVD", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22Azure+Virtual+Desktop%22", type: search, tags: [avd, microsoft]}
+  - {name: "Bing News: AVD", url: "https://www.bing.com/news/search?format=rss&q=%22Azure+Virtual+Desktop%22", type: search, tags: [avd, microsoft]}
+  - {name: "Google News: Azure Local", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22Azure+Local%22+OR+%22Azure+Stack+HCI%22", type: search, tags: [azure-local, microsoft]}
+  - {name: "Bing News: Azure Local", url: "https://www.bing.com/news/search?format=rss&q=Azure+Local", type: search, tags: [azure-local, microsoft]}
+  - {name: "Google News: Windows 365", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22Windows+365%22", type: search, tags: [w365, microsoft]}
+  - {name: "Bing News: Windows 365", url: "https://www.bing.com/news/search?format=rss&q=%22Windows+365%22", type: search, tags: [w365, microsoft]}
+  - {name: "Google News: Windows patch known issues", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%28%22Windows+11%22+OR+%22Windows+Server+2025%22%29+update+%22known+issue%22", type: search, tags: [windows, patch]}
+  - {name: "Bing News: Windows patch known issues", url: "https://www.bing.com/news/search?format=rss&q=%28%22Windows+11%22+OR+%22Windows+Server+2025%22%29+update+%22known+issue%22", type: search, tags: [windows, patch]}
+  - {name: "Google News: EUC vulnerabilities", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%28Citrix+OR+NetScaler+OR+Omnissa+OR+%22VMware+Horizon%22+OR+FSLogix+OR+IGEL+OR+ControlUp+OR+Nutanix+OR+%22Remote+Desktop%22%29+vulnerability+OR+CVE", type: search, tags: [security], security: true}
+  - {name: "Bing News: EUC vulnerabilities", url: "https://www.bing.com/news/search?format=rss&q=Citrix+vulnerability", type: search, tags: [security], security: true}
+
+# Vendors kept from the CISA KEV catalog (case-insensitive match on vendorProject/product)
+kev_vendors: [citrix, netscaler, microsoft, vmware, broadcom, omnissa, nutanix, igel, controlup, unicon]
+
+# Tag -> keywords. Any item whose title/summary contains a keyword gets the tag.
+# Feeds with require_keywords: true only keep items that match at least one tag here.
+tag_keywords:
+  citrix: [citrix, cvad, "virtual apps and desktops", storefront, "citrix director", daas, xenserver]
+  netscaler: [netscaler, "citrix adc", "citrix gateway"]
+  unicon: [unicon, elux]
+  microsoft: [microsoft]
+  fslogix: [fslogix]
+  vmware: [vmware, "vmware horizon", vsphere, esxi]
+  omnissa: [omnissa, "workspace one", "horizon 8"]
+  m365: ["microsoft 365", "office 365", outlook, onedrive, "microsoft teams"]
+  controlup: [controlup]
+  igel: [igel]
+  nutanix: [nutanix]
+  avd: ["azure virtual desktop", " avd "]
+  azure-local: ["azure local", "azure stack hci"]
+  w365: ["windows 365", "cloud pc"]
+  windows: ["windows 11", "windows server 2025", "windows server"]
+  patch: ["patch tuesday", "known issue", "cumulative update", " kb50"]
+  security: [cve-, vulnerability, exploit, zero-day, "0-day", ransomware, "security update", advisory]
+
+# Curated EUC X accounts shown in "X / Community" (profile links, no API needed).
+# Add/remove handles here.
+x_accounts:
+  - {handle: citrix, note: Citrix}
+  - {handle: NetScaler, note: NetScaler}
+  - {handle: OmnissaEUC, note: Omnissa}
+  - {handle: ControlUp, note: ControlUp}
+  - {handle: IGEL_Tech, note: IGEL}
+  - {handle: nutanix, note: Nutanix}
+  - {handle: MSWindowsITPro, note: Windows IT Pro}
+  - {handle: Microsoft365, note: Microsoft 365}
+  - {handle: CISAgov, note: CISA}
+  - {handle: msftsecresponse, note: MSRC}
+  - {handle: BleepinComputer, note: BleepingComputer}
+  - {handle: etguenni, note: "Born's Tech and Windows World"}
+  - {handle: CStalhood, note: Carl Stalhood}
