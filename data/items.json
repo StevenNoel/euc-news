@@ -1,7 +1,7 @@
 {
- "updated": "2026-10-13T17:44:38Z",
+ "updated": "2026-10-13T17:45:52Z",
  "window_days": 30,
- "count": 329,
+ "count": 338,
  "feeds": [
   {
    "name": "Citrix Community Blogs",
@@ -96,7 +96,7 @@
   {
    "name": "Bing News: Citrix",
    "ok": true,
-   "count": 4
+   "count": 8
   },
   {
    "name": "Google News: NetScaler",
@@ -116,7 +116,7 @@
   {
    "name": "Bing News: Unicon",
    "ok": true,
-   "count": 10
+   "count": 2
   },
   {
    "name": "Google News: FSLogix",
@@ -126,7 +126,7 @@
   {
    "name": "Bing News: FSLogix",
    "ok": true,
-   "count": 12
+   "count": 1
   },
   {
    "name": "Google News: Omnissa",
@@ -146,7 +146,7 @@
   {
    "name": "Bing News: VMware Horizon / Broadcom EUC",
    "ok": true,
-   "count": 9
+   "count": 5
   },
   {
    "name": "Google News: M365",
@@ -156,7 +156,7 @@
   {
    "name": "Bing News: M365",
    "ok": true,
-   "count": 10
+   "count": 11
   },
   {
    "name": "Google News: ControlUp",
@@ -166,17 +166,17 @@
   {
    "name": "Bing News: ControlUp",
    "ok": true,
-   "count": 12
+   "count": 4
   },
   {
    "name": "Google News: IGEL",
    "ok": true,
-   "count": 77
+   "count": 76
   },
   {
    "name": "Bing News: IGEL",
    "ok": true,
-   "count": 12
+   "count": 10
   },
   {
    "name": "Google News: Nutanix",
@@ -186,7 +186,7 @@
   {
    "name": "Bing News: Nutanix",
    "ok": true,
-   "count": 8
+   "count": 12
   },
   {
    "name": "Google News: AVD",
@@ -196,7 +196,7 @@
   {
    "name": "Bing News: AVD",
    "ok": true,
-   "count": 6
+   "count": 12
   },
   {
    "name": "Google News: Azure Local",
@@ -206,7 +206,7 @@
   {
    "name": "Bing News: Azure Local",
    "ok": true,
-   "count": 8
+   "count": 11
   },
   {
    "name": "Google News: Windows 365",
@@ -216,7 +216,7 @@
   {
    "name": "Bing News: Windows 365",
    "ok": true,
-   "count": 10
+   "count": 12
   },
   {
    "name": "Google News: Windows patch known issues",
@@ -660,6 +660,19 @@
    "id": "b9d27d2432d5779f"
   },
   {
+   "title": "Business News | IFI Techsolutions Renews Three Microsoft Azure Specializations for a Fifth Consecutive Year",
+   "link": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ace6e64d2724656a49f10923b6de5bf&url=https%3a%2f%2fwww.latestly.com%2fagency-news%2fbusiness-news-ifi-techsolutions-renews-three-microsoft-azure-specializations-for-a-fifth-consecutive-year-7642649.html&c=678157119885975619&mkt=en-us",
+   "summary": "Get latest articles and stories on Business at LatestLY. Mumbai (Maharashtra) [India], October 13: IFI Techsolutions Limited (“IFI Techsolutions”), a global cloud solutions and managed services ...",
+   "source": "Bing News: AVD",
+   "published": "2026-10-12T23:27:00Z",
+   "tags": [
+    "avd",
+    "microsoft"
+   ],
+   "security": false,
+   "id": "81abe256d96f8ea3"
+  },
+  {
    "title": "Bricksforge WordPress Plugin Vulnerability Exploited in the Wild - SecurityWeek",
    "link": "https://news.google.com/rss/articles/CBMinwFBVV95cUxNdFFfRWEyeG4wbF9lYzNsWm9VVXE5aU41d2hNNlp5eDFjRVliREhTRU8wemJFbjJaTHo1ZGEyQjl1X01rNlpFaEZ0eXF1OEpWQldJSVp6VWVMN0RvaWNUTTZDWXJIR0cwV3FXek5WaFNfTmdiTk1kcG9wa0ktZGl6cm43VFFzYndFRXBaTTdMal96STItYTFPcWF0VWxlQ1XSAZ8BQVVfeXFMTXRRX0VhMnhuMGxfZWMzbFpvVVVxOWlONXdoTTZaeXgxY0VZYkRIU0VPMHpiRW4yWkx6NWRhMkI5dV9NazZaRWhGdHlxdThKVkJXSUlaelVlTDdEb2ljVE02Q1lySEdHMFdxV3pOVmhTX05nYk5NZHBvcGtJLWRpenJuN1RRc2J3RUVwWk03TGpfekkyLWExT3FhdFVsZUNV?oc=5",
    "summary": "Bricksforge WordPress Plugin Vulnerability Exploited in the Wild SecurityWeek",
@@ -785,6 +798,18 @@
    ],
    "security": true,
    "id": "09381c70cb516118"
+  },
+  {
+   "title": "Nutanix, Inc. (NTNX) Stock Price, News, Quote & History - Yahoo Finance",
+   "link": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ace6e63c9894528bd9404eb431ebaed&url=https%3a%2f%2ffinance.yahoo.com%2fquote%2fNTNX%2f&c=2021286212980021991&mkt=en-us",
+   "summary": "The above button links to Coinbase. Yahoo Finance is not a broker-dealer or investment adviser and does not offer securities or cryptocurrencies for sale or facilitate trading. Coinbase pays us for ...",
+   "source": "Bing News: Nutanix",
+   "published": "2026-10-12T13:26:00Z",
+   "tags": [
+    "nutanix"
+   ],
+   "security": false,
+   "id": "989fb6a77be08120"
   },
   {
    "title": "Act Now! Aussie cyber agency updates Citrix NetScaler critical alert to include brand new vulnerability - Cyber Daily",
@@ -2933,6 +2958,18 @@
    "id": "43acc252c8df1166"
   },
   {
+   "title": "Omnissaが「Elara」を発表 AIエージェントの暴走を防ぐ“実行前の権限レイヤー”とは：「Omnissa ONE 2026」現地レポート",
+   "link": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ace6e5f56454a2d86939f9231a661e2&url=https%3a%2f%2fwww.itmedia.co.jp%2fenterprise%2farticles%2f2610%2f01%2fnews030.html&c=14788805483674416535&mkt=en-us",
+   "summary": "Omnissaが年次イベントで、新CEO就任とともに「エージェンティック・エンドポイント」構想を発表。第3の製品ライン「Omnissa Elara」を投入し、AIエージェントの急増に伴うガバナンスや重要操作の実行前統制といった新たなセキュリティ課題に挑む。",
+   "source": "Bing News: Omnissa",
+   "published": "2026-10-01T05:25:00Z",
+   "tags": [
+    "omnissa"
+   ],
+   "security": false,
+   "id": "17233f4a8355b683"
+  },
+  {
    "title": "IGEL BCDR™ Streamlines Endpoint Recovery Readiness with Omnissa Workspace ONE UEM Automation - Yahoo! Finance Canada",
    "link": "https://news.google.com/rss/articles/CBMikgFBVV95cUxPSjVITGxDdkh1MDJBc1VtQTZIcFMycllOcVFvWjJLaVRvTVZVaGdmWGpSdUtQVEtydVNGa2x1OVljV014ZWQ0czZHSkM4Q24zSzFqRV9xREhEZU9DTmZMSlh6ZGF1QmNFV0pDeTVoWnY1QmRDdGVpLUxxOWJaZmdGXzlPRGFhQWpEU3lHckY5MGdZdw?oc=5",
    "summary": "IGEL BCDR™ Streamlines Endpoint Recovery Readiness with Omnissa Workspace ONE UEM Automation Yahoo! Finance Canada",
@@ -3122,6 +3159,20 @@
    "id": "abd8b053963789b3"
   },
   {
+   "title": "Citrix NetScaler vulnerability puts your company network at risk",
+   "link": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ace6e686adf45b6af4d7baefc61bf7f&url=https%3a%2f%2fwww.msn.com%2fen-us%2fnews%2fother%2fcitrix-netscaler-vulnerability-puts-your-company-network-at-risk%2far-AA2dilQ7&c=16961726575175339834&mkt=en-us",
+   "summary": "Two Citrix NetScaler zero-days are being exploited, and patching alone may not be enough. Here is what founders should ask their IT team today. The post Citrix NetScaler Vulnerability Puts Your ...",
+   "source": "Bing News: EUC vulnerabilities",
+   "published": "2026-09-30T09:53:20Z",
+   "tags": [
+    "citrix",
+    "netscaler",
+    "security"
+   ],
+   "security": true,
+   "id": "14a73302ebed47b2"
+  },
+  {
    "title": "Three-Quarters of AI Tools on Company Devices Were Never Approved - ad-hoc-news.de",
    "link": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxNSk9kWTZvVmVyb21mdk5TNEJSbXd4V05hVHpiTUtlekFwdDJkdndaU25jRjMyeWh5XzNzQUxIaks4N2l4ak5iWnFIaUp5QjRTQXhCWXh4MzBydGR6Q1dYdnZfY3MwbktKWmJkRnJOMU4yY1BULTE1SXZjeGFwSENZTkFFRHY1bW9VZG52Y3RmSnY3bEhhR1I1bW14c25TWTdMT19hSHNFSjdGOXN3Nm9OU0U4T0pCOXEtMW5wOFVSY21qSXlMLXFjai14YklSazFDcENN?oc=5",
    "summary": "Three-Quarters of AI Tools on Company Devices Were Never Approved ad-hoc-news.de",
@@ -3132,6 +3183,20 @@
    ],
    "security": false,
    "id": "a533c62334dcd725"
+  },
+  {
+   "title": "Citrix NetScaler zero-days spread mass exploitation: Patching won't remove backdoors",
+   "link": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ace6e5d7eac45b99ce2cf1866749ad8&url=https%3a%2f%2fwww.msn.com%2fen-us%2fnews%2fother%2fcitrix-netscaler-zero-days-spread-mass-exploitation-patching-wont-remove-backdoors%2far-AA2dh4tx&c=10737574862632387701&mkt=en-us",
+   "summary": "Citrix NetScaler zero-day vulnerabilities CVE-2026-88771 and CVE-2026-88772 triggered mass internet exploitation within minutes of a proof-of-concept release. With 100+ organizations already ...",
+   "source": "Bing News: NetScaler",
+   "published": "2026-09-30T06:54:47Z",
+   "tags": [
+    "citrix",
+    "netscaler",
+    "security"
+   ],
+   "security": true,
+   "id": "2c6dc1380b18b201"
   },
   {
    "title": "Who's Watching the Agents? Omnissa Answers with Elara, and a New CEO Who Plans to Make Some Noise - VMblog",
@@ -3363,6 +3428,18 @@
    "id": "924be707ac7872fd"
   },
   {
+   "title": "Omnissa、IT部門の可視性と管理能力を強化し、より自律的なワークスペースへの移行を支援するAIイノベーションを発表",
+   "link": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ace6e5f56454a2d86939f9231a661e2&url=https%3a%2f%2fdigitalpr.jp%2fr%2f144839&c=4612979142802675347&mkt=en-us",
+   "summary": "AI対応ワークスペース、IT運用を支援するAIエージェント、 AIガバナンスソリューションにより、AI投資からのさらなる価値創出を支援 ※本リリースは、米国時間2026年9月29日に発表されたプレスリリースの抄訳です。 https://www.omnissa.com/newsroom/news/omnissa-one-amer-2026-autonomous-announcements-press ...",
+   "source": "Bing News: Omnissa",
+   "published": "2026-09-29T04:00:00Z",
+   "tags": [
+    "omnissa"
+   ],
+   "security": false,
+   "id": "b1e01cf012b9d510"
+  },
+  {
    "title": "Hackers Hit NetScaler Zero-Days Before Citrix Patched - BankInfoSecurity",
    "link": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOM0d2bE1sbU1JSkpBYW5xc3VlQnlLNEV1UEtlbGJ6YXZIalpfY3dnTUNzTzZSWHYzYzJvWldGWjJubi1qdEhmbVRZX0VPSk1hSVV0SWhqazAyM25KVEFIZXUtcnl1MDYxMmstcXA3M1h6aHBOVml2TFV5YVlHRXdwV2tQYWxLNkpkWDJsbDMzNHVIdnJ4UlpHQ1B3?oc=5",
    "summary": "Hackers Hit NetScaler Zero-Days Before Citrix Patched BankInfoSecurity",
@@ -3388,6 +3465,18 @@
    ],
    "security": false,
    "id": "7b31027c08eecd92"
+  },
+  {
+   "title": "Omnissa、アミット・シン（Amit Singh）をCEOに任命",
+   "link": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ace6e5f56454a2d86939f9231a661e2&url=https%3a%2f%2fwww.asahi.com%2fand%2fpressrelease%2f16922693&c=11726471784850823060&mkt=en-us",
+   "summary": "元Palo Alto Networks社長、Google Cloud共同創設者、 Omnissaの成長を加速し「エージェンティック・エンドポイント」時代を主導 ※本リリースは、米国時間2026年9月28日に発表されたプレスリリースの抄訳です。 https://www.omnissa.com/newsroom/news/omnissa-appoints-amit-singh-as-new-ceo/ ...",
+   "source": "Bing News: Omnissa",
+   "published": "2026-09-28T19:00:00Z",
+   "tags": [
+    "omnissa"
+   ],
+   "security": false,
+   "id": "e4580b4bbabcec29"
   },
   {
    "title": "Omnissa Names Former Palo Alto Networks President Amit Singh CEO - citybiz",
@@ -3783,6 +3872,20 @@
    ],
    "security": true,
    "id": "cd8c669f8ef4b36e"
+  },
+  {
+   "title": "Microsoft warnt vor diesen Windows-Updates, die Blackscreens und Abstürze verursachen",
+   "link": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ace6e67e77141ca8902cb435dc68b8e&url=https%3a%2f%2fwww.msn.com%2fde-de%2ftechnik%2fsoftware%2fmicrosoft-warnt-vor-diesen-windows-updates-die-blackscreens-und-abst%25C3%25BCrze-verursachen%2far-AA2d6W48&c=8504761124321175141&mkt=en-us",
+   "summary": "Microsoft warnt davor, dass die Preview-Updates KB5124010 für Windows 11 Version 25H2 und 24H2 und KB5120996 für Windows 11 Version 26H1 (nur für bestimmte ARM-Prozessoren) zu Systemabstürzen und Blac ...",
+   "source": "Bing News: Windows patch known issues",
+   "published": "2026-09-28T01:39:22Z",
+   "tags": [
+    "microsoft",
+    "patch",
+    "windows"
+   ],
+   "security": false,
+   "id": "0da7dc7fcb68e9ff"
   },
   {
    "title": "CISA orders feds to patch exploited Citrix flaws by Wednesday",
@@ -4499,6 +4602,18 @@
    ],
    "security": false,
    "id": "3612b11604fda3f2"
+  },
+  {
+   "title": "Nutanix (NTNX) Is Getting Fresh Attention, So What Is Behind It?",
+   "link": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ace6e63c9894528bd9404eb431ebaed&url=https%3a%2f%2ffinance.yahoo.com%2fmarkets%2fstocks%2farticles%2fnutanix-ntnx-getting-fresh-attention-231447600.html&c=8783045520999667862&mkt=en-us",
+   "summary": "The above button links to Coinbase. Yahoo Finance is not a broker-dealer or investment adviser and does not offer securities or cryptocurrencies for sale or facilitate trading. Coinbase pays us for ...",
+   "source": "Bing News: Nutanix",
+   "published": "2026-09-16T16:14:00Z",
+   "tags": [
+    "nutanix"
+   ],
+   "security": false,
+   "id": "66004dca9b14738f"
   },
   {
    "title": "F5 Announces Strategic Partnership With Omnissa to Deliver Secure, High-Performance Digital Workspaces - Yahoo Finance",
