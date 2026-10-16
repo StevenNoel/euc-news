@@ -37,6 +37,15 @@ SECTIONS = [
     ("cloud", {"m365", "azure-local"}),
     ("windows", {"windows", "patch", "microsoft"}),
 ]
+VENDOR_SOURCES = ("cisa", "msrc", "microsoft", "citrix", "omnissa", "broadcom", "vmware", "nutanix", "igel", "controlup", "carl stalhood")
+
+
+def trusted_outlet(src):
+    """Independent news outlets only (vendor blogs don't count) - used for Top Stories filler."""
+    s = src.lower()
+    return any(t in s for t in TRUSTED) and not any(v in s for v in VENDOR_SOURCES)
+
+
 AI_TAGS = ["grok", "claude", "openai", "gemini", "huggingface", "local-llm"]
 EUC_TAGS = {"citrix", "netscaler", "xenserver", "vmware", "omnissa", "nutanix", "avd", "w365", "fslogix",
             "m365", "azure-local", "intune", "igel", "controlup", "unicon"}
@@ -597,15 +606,20 @@ def main():
     for i in elig:
         i["top_score"] = round(top_score(i), 2)
     multi = sorted([i for i in elig if i["n_sources"] >= 2], key=lambda i: -i["top_score"])
-    fallback = sorted([i for i in elig if i["n_sources"] < 2 and not i.get("vblog") and any(t in i["source"].lower() for t in TRUSTED)],
+    fallback = sorted([i for i in elig if i["n_sources"] < 2 and not i.get("vblog") and trusted_outlet(i["source"])],
                       key=lambda i: i["published"], reverse=True)
-    top, per_v, per_s = [], {}, {}
+    top, per_v, per_s, filler_src = [], {}, {}, set()
     for i in multi + fallback:
+        if i["n_sources"] < 2:  # at most 1 filler story per source
+            if i["source"] in filler_src:
+                continue
         v = (i["vendors"] or ["_none"])[0]
         if per_v.get(v, 0) >= TOP_PER_VENDOR or per_s.get(i["section"], 0) >= (2 if i["section"] == "ai" else TOP_PER_SECTION):
             continue
         per_v[v] = per_v.get(v, 0) + 1; per_s[i["section"]] = per_s.get(i["section"], 0) + 1
         top.append(i["id"])
+        if i["n_sources"] < 2:
+            filler_src.add(i["source"])
         if len(top) >= TOP_N:
             break
     for i in items:
