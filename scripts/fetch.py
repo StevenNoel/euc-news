@@ -376,6 +376,48 @@ def fetch_kev(feed, vendors):
     return out
 
 
+NS_BUILD = re.compile(r"(\d+\.\d+)(?:\s+Build\s+|-)(\d+\.\d+)", re.I)
+NS_FMT = re.compile(r"\b(VPX|CPX|BLX|SDX|MPX|FIPS|NDcPP)\b", re.I)
+
+
+def fetch_releases(rc):
+    """Citrix download RSS -> merged, newest first; NetScaler per-format duplicates collapsed."""
+    rows = {}
+    for feed in rc.get("feeds", []):
+        try:
+            r = requests.get(feed["url"], headers={"User-Agent": BROWSER_UA}, timeout=20)
+            r.raise_for_status()
+            entries = feedparser.parse(r.content).entries
+        except Exception as ex:
+            print(f"  releases FAIL {feed['name']}: {ex}")
+            continue
+        print(f"  releases ok {feed['name']}: {len(entries)}")
+        for e in entries:
+            title = re.sub(r"^\s*New\s*-\s*", "", e.get("title", "")).strip()
+            dt = to_dt(e)
+            if not title or not dt:
+                continue
+            link = e.get("link", "").replace("http://", "https://", 1)
+            fmt, key = None, title.lower()
+            m = NS_BUILD.search(title)
+            if feed["name"] == "NetScaler" and m:
+                fm = NS_FMT.search(title)
+                fmt = fm.group(1).upper() if fm else "Firmware"
+                phase = re.search(r"\(([^)]*)\)", title)
+                key = "ns:" + m.group(1) + ":" + m.group(2) + (":fips" if fmt in ("FIPS", "NDCPP") else "")
+                title = f"NetScaler {m.group(1)} Build {m.group(2)}" + (" FIPS" if fmt in ("FIPS", "NDCPP") else "") + (f" ({phase.group(1)})" if phase else "")
+            row = rows.get(key)
+            if not row:
+                row = rows[key] = {"title": title, "product": feed["name"], "link": link,
+                                   "published": dt.strftime("%Y-%m-%dT%H:%M:%SZ"), "formats": []}
+            if fmt and fmt not in row["formats"]:
+                row["formats"].append(fmt)
+                if fmt == "Firmware":
+                    row["link"] = link
+    out = sorted(rows.values(), key=lambda x: x["published"], reverse=True)
+    return out[: int(rc.get("keep", 30))]
+
+
 def main():
     cfg = yaml.safe_load(SOURCES.read_text())
     tag_map = cfg.get("tag_keywords", {})
@@ -460,6 +502,8 @@ def main():
     stats = {"collected": len(new) + len(existing), "after_first_pass": len(by_key)}
     cutoff = CUTOFF.strftime("%Y-%m-%dT%H:%M:%SZ")
     items = [i for i in by_key.values() if i["published"] >= cutoff]
+    # Citrix download pages live only in the Citrix Releases panel
+    items = [i for i in items if "citrix.com/downloads/" not in i.get("link", "")]
     stats["in_window_before_dedupe"] = len(items)
 
     # --- Classify: CVE/breach rail vs. security hardening vs. topic sections ---
@@ -639,9 +683,12 @@ def main():
     stats["clusters"] = len({i["cluster"] for i in items})
     print("stats:", stats)
 
+    releases = fetch_releases(cfg.get("citrix_releases", {}))
+    print(f"releases: {len(releases)}")
     out = {"updated": NOW.strftime("%Y-%m-%dT%H:%M:%SZ"), "window_days": WINDOW_DAYS,
            "count": len(items), "stats": stats, "feeds": status, "top": top,
-           "items": items}
+           "items": items, "releases": releases,
+           "releases_show": int(cfg.get("citrix_releases", {}).get("show", 10))}
     DATA.parent.mkdir(parents=True, exist_ok=True)
     DATA.write_text(json.dumps(out, indent=1, ensure_ascii=False))
     ok = sum(s["ok"] for s in status)

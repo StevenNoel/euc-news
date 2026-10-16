@@ -17,7 +17,7 @@
     nutanix: "Nutanix", avd: "AVD", w365: "Windows 365", fslogix: "FSLogix", microsoft: "Microsoft", windows: "Windows",
     m365: "M365", "azure-local": "Azure Local", intune: "Intune", jamf: "Jamf", patchmypc: "Patch My PC", uem: "UEM", igel: "IGEL", controlup: "ControlUp", unicon: "Unicon",
     grok: "Grok", claude: "Claude", openai: "OpenAI", gemini: "Gemini", huggingface: "Hugging Face", "local-llm": "Local LLM" };
-  const st = { all: [], rail: { cves: [], outages: [] }, top: [], tab: "top", q: "", vendor: "" };
+  const st = { rel: [], relShow: 10, all: [], rail: { cves: [], outages: [] }, top: [], tab: "top", q: "", vendor: "" };
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const safe = (u) => (/^https?:\/\//i.test(u || "") ? u : "");
   const ago = (iso) => { const s = (Date.now() - new Date(iso)) / 1e3;
@@ -100,12 +100,23 @@
       (list.length ? `<ul class="mini">${list.map((it) => `<li><a href="${href(it.link)}" target="_blank" rel="noopener noreferrer">${badge && it.badge ? `<span class="badge b-${esc(it.badge.toLowerCase())}">${esc(it.badge)}</span>` : ""}<span class="t">${esc(it.title)}</span><span class="m">${esc(it.source)} · ${ago(it.published)}</span></a></li>`).join("")}</ul>`
         : `<p class="empty">Nothing recent.</p>`) + `<p class="note">${note}</p>`;
   }
+  function releases() {
+    const el = $("#releases"), all = st.rel.filter((r) => !st.q || (r.title + " " + r.product).toLowerCase().includes(st.q.toLowerCase()));
+    const li = (r, i) => `<li${i >= st.relShow ? ' class="more-item" hidden' : ""}><a href="${href(r.link)}" target="_blank" rel="noopener noreferrer"><span class="t">${esc(r.title)}</span><span class="m">${esc(r.product)}${r.formats && r.formats.length > 1 ? " · " + esc(r.formats.join(", ")) : ""} · ${new Date(r.published).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}</span></a></li>`;
+    el.innerHTML = `<h2><span class="dot cx" aria-hidden="true"></span>Citrix releases</h2>` +
+      (all.length ? `<ul class="mini">${all.map(li).join("")}</ul>` + (all.length > st.relShow ? `<button class="more-btn" type="button" aria-expanded="false">Show ${all.length - st.relShow} more</button>` : "")
+        : `<p class="empty">No releases found.</p>`) + `<p class="note">Official Citrix download feeds (CVAD, NetScaler, Workspace app).</p>`;
+  }
+  document.addEventListener("click", (e) => { const b = e.target.closest("#releases .more-btn"); if (!b) return;
+    const open = b.getAttribute("aria-expanded") !== "true"; b.setAttribute("aria-expanded", open);
+    document.querySelectorAll("#releases .more-item").forEach((x) => (x.hidden = !open)); b.textContent = open ? "Show less" : `Show ${document.querySelectorAll("#releases .more-item").length} more`; });
   function render() {
     const items = st.all.filter(match), used = new Set();
     let html;
     if (st.tab === "top") { const top = topStories(items, used); html = top + SECTIONS.slice(1).map((s) => sectionBlock(s, items, false, used)).join(""); }
     else html = sectionBlock(secOf(st.tab), items, true);
     $("#main").innerHTML = html;
+    releases();
     rail("cves", "Top CVEs &amp; breaches", "red", "CISA KEV (tracked vendors), critical/exploited MSRC CVEs, zero-days and major breaches.", 10, true);
     rail("outages", "Outages &amp; status", "", "Official status feeds (AWS, Azure, Google Cloud, Cloudflare, Microsoft 365) and outage news.", 8, false);
     document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", t.dataset.tab === st.tab));
@@ -157,6 +168,7 @@
     st.rail.outages = items.filter((i) => i.section === "outages");
     st.all = items.filter((i) => i.section !== "cves" && i.section !== "outages");
     st.top = d.top || [];
+    st.rel = d.releases || []; st.relShow = d.releases_show || 10;
     $("#updated").textContent = `Updated ${ago(d.updated)} · ${new Date(d.updated).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}`;
     chips();
     const h = location.hash.slice(1);

@@ -53,3 +53,6 @@ mkdir -p site/data && cp data/items.json site/data/ && python -m http.server -d 
 
 ### Top Stories
 Ranked by multi-publisher coverage (distinct publishers in a story cluster), recency (24h half-life) and source authority, with at most 2 stories per vendor and 3 per section (2 for AI). Raw CVE/KEV/MSRC entries, GitHub releases, Microsoft Learn pages, Reddit, press releases and security-vendor blogs without multi-source coverage are excluded (`no_top: true` in sources.yml). If there aren't enough multi-source stories, recent quality articles fill the rest.
+
+## Citrix Releases panel
+`citrix_releases` in `sources.yml` lists the official Citrix download RSS feeds (fetched with a browser User-Agent). Entries are merged newest first, the "New - " prefix is stripped, and NetScaler builds published once per format (VPX/CPX/BLX/firmware) collapse into one line. `show` sets how many lines appear before "Show more"; `keep` caps the stored list. Citrix download pages never appear in other sections. The workflow stamps `?v=<sha>-<time>` onto the style.css/app.js links for cache-busting.

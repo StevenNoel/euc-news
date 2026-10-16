@@ -42,6 +42,8 @@ jobs:
           mkdir -p _site/data
           cp -r site/. _site/
           cp data/items.json _site/data/items.json
+          v="${GITHUB_SHA::8}-$(date -u +%Y%m%d%H%M)"
+          sed -i "s/?v=dev/?v=$v/g" _site/index.html
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: _site

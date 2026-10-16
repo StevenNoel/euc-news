@@ -125,6 +125,16 @@ feeds:
   - {name: "Google News: EUC vulnerabilities", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%28Citrix+OR+NetScaler+OR+Omnissa+OR+%22VMware+Horizon%22+OR+FSLogix+OR+IGEL+OR+ControlUp+OR+Nutanix+OR+%22Remote+Desktop%22%29+vulnerability+OR+CVE", type: search, tags: [security], security: true}
   - {name: "Bing News: EUC vulnerabilities", url: "https://www.bing.com/news/search?format=rss&q=Citrix+vulnerability", type: search, tags: [security], security: true}
 
+# Citrix Releases panel (official download RSS). Kept out of every other section.
+# NetScaler builds published once per format (VPX/CPX/BLX/...) collapse into one line.
+citrix_releases:
+  show: 10        # lines shown before "more"
+  keep: 30        # lines stored
+  feeds:
+    - {name: Citrix Virtual Apps and Desktops, url: "https://www.citrix.com/content/citrix/en_us/downloads/citrix-virtual-apps-and-desktops.rss"}
+    - {name: NetScaler, url: "https://www.citrix.com/content/citrix/en_us/downloads/netscaler-adc.rss"}
+    - {name: Citrix Workspace app, url: "https://www.citrix.com/content/citrix/en_us/downloads/workspace-app.rss"}
+
 # Vendors kept from the CISA KEV catalog (case-insensitive match on vendorProject/product)
 kev_vendors: [citrix, netscaler, microsoft, vmware, broadcom, omnissa, nutanix, igel, controlup, unicon]
 

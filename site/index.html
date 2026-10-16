@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <meta name="description" content="End-user computing and sysadmin news: Citrix, Omnissa, Microsoft, AVD, security and outages.">
 <title>EUC News</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=dev">
 <script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
 <body>
@@ -32,12 +32,13 @@
   <div class="layout">
     <main id="main" aria-live="polite"></main>
     <aside class="side">
+      <section class="panel" id="releases"></section>
       <section class="panel" id="cves"></section>
       <section class="panel" id="outages"></section>
     </aside>
   </div>
 </div>
 <footer class="foot">Headlines link to the original publishers. Refreshed every 4 hours. <a href="https://github.com/StevenNoel/euc-news">Source on GitHub</a></footer>
-<script src="app.js"></script>
+<script src="app.js?v=dev"></script>
 </body>
 </html>

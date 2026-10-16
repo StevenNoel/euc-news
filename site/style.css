@@ -167,3 +167,8 @@ svg{width:20px;height:20px;fill:currentColor}
   .chips.scrolled{-webkit-mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 36px),transparent)}
   .updated{align-self:flex-start}
 }
+
+/* Citrix releases panel */
+.dot.cx{background:#2a7de1}
+.more-btn{margin:6px 0 2px;padding:4px 10px;border:1px solid var(--line,#ccc);border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:.8rem;cursor:pointer}
+.more-btn:hover{background:rgba(127,127,127,.12)}
