@@ -31,6 +31,9 @@
   const relOf = (g) => [...g.rel, ...(g.lead.related || [])];
   const big = (g) => link(g.lead, "big", `${img(g.lead)}<h3>${esc(g.lead.title)}</h3>${g.lead.summary ? `<p>${esc(g.lead.summary)}</p>` : ""}${meta(g.lead)}`) + related(relOf(g));
   const med = (g) => `<div>${link(g.lead, "med", `<div><h3>${esc(g.lead.title)}</h3>${meta(g.lead)}</div>${img(g.lead)}`)}${related(relOf(g))}</div>`;
+  const crow = (g) => `<li><a href="${href(g.lead.link)}" target="_blank" rel="noopener noreferrer"><span class="ct">${esc(g.lead.title)}</span>
+    <span class="cm">${esc(g.lead.source)} · ${ago(g.lead.published)}${g.lead.n_sources > 1 ? ` · ${g.lead.n_sources} sources` : ""}${g.lead.vendors[0] ? ` <span class="vtag">${esc(VENDORS[g.lead.vendors[0]] || "")}</span>` : ""}</span></a></li>`;
+  const compact = (gs) => gs.length ? `<ul class="compact" aria-label="More headlines">${gs.map(crow).join("")}</ul>` : "";
   const row = (g) => link(g.lead, "row", `<div><h4>${esc(g.lead.title)}</h4>${meta(g.lead)}</div>${img(g.lead)}`);
 
   const match = (it) => { const q = st.q.toLowerCase();
@@ -45,15 +48,21 @@
 
   function topStories(items, used) {
     const byCluster = new Map(clusters(items).map((g) => [g.lead.cluster || g.lead.id, g]));
+    const ranked = clusters(items).filter((g) => !["cves", "outages"].includes(g.lead.section)).sort((a, b) => b.lead.score - a.lead.score);
     let gs = st.top.map((id) => byCluster.get(id)).filter(Boolean);
-    if (st.q || st.vendor) gs = clusters(items).filter((g) => !["cves", "outages"].includes(g.lead.section)).sort((a, b) => b.lead.score - a.lead.score).slice(0, 11);
+    if (st.q || st.vendor) gs = ranked.slice(0, 20);
     if (!gs.length) return `<section class="sect"><p class="empty">No stories match.</p></section>`;
     gs = pickLead(gs);
     gs.forEach((g) => used.add(g.lead.cluster || g.lead.id));
     const [hero, ...rest] = gs;
+    const meds = rest.slice(0, 4), row3 = rest.slice(4, 7);
+    // compact list under the hero: remaining top picks, then next-ranked stories not shown anywhere yet
+    const shownIds = new Set([hero, ...meds, ...row3].map((g) => g.lead.cluster || g.lead.id));
+    const pool = [...rest.slice(7), ...ranked].filter((g) => { const k = g.lead.cluster || g.lead.id; if (shownIds.has(k)) return false; shownIds.add(k); return true; }).slice(0, 12);
+    pool.forEach((g) => used.add(g.lead.cluster || g.lead.id));
     return `<section class="sect" id="s-top"><div class="sect-h"><h2>Top stories</h2></div>
-      <div class="hero"><div>${big(hero)}</div><div class="meds">${rest.slice(0, 4).map(med).join("")}</div></div>
-      ${rest.length > 4 ? `<div class="more-top">${rest.slice(4, 10).map((g) => link(g.lead, "big", `${img(g.lead)}<h3>${esc(g.lead.title)}</h3>${meta(g.lead)}`)).join("")}</div>` : ""}</section>`;
+      <div class="hero fit"><div class="leads">${big(hero)}${compact(pool)}</div><div class="meds">${meds.map(med).join("")}</div></div>
+      ${row3.length ? `<div class="more-top">${row3.map((g) => link(g.lead, "big", `${img(g.lead)}<h3>${esc(g.lead.title)}</h3>${meta(g.lead)}`)).join("")}</div>` : ""}</section>`;
   }
   function sectionBlock(s, items, full, used = new Set()) {
     let gs = clusters(items.filter((it) => it.section === s.id)).filter((g) => !used.has(g.lead.cluster || g.lead.id));
@@ -61,11 +70,14 @@
     gs = (recent.length >= 4 ? recent : gs).sort((a, b) => b.lead.score - a.lead.score);
     if (!gs.length) return full ? `<section class="sect" style="--sc:${s.c}"><div class="sect-h"><h2>${s.name}</h2></div><p class="empty">No stories match.</p></section>` : "";
     gs = pickLead(gs);
-    const nLead = full ? 2 : (gs.length > 7 ? 2 : 1), leads = gs.slice(0, nLead);
-    const rest = gs.slice(nLead).sort(full ? (a, b) => new Date(b.lead.published) - new Date(a.lead.published) : () => 0).slice(0, full ? 60 : 6);
+    const nLead = full ? 2 : 1, leads = gs.slice(0, nLead);
+    const nRows = full ? 30 : 6;
+    const rest = gs.slice(nLead, nLead + nRows), pool = gs.slice(nLead + nRows, nLead + nRows + (full ? 30 : 10));
+    if (full) rest.sort((a, b) => new Date(b.lead.published) - new Date(a.lead.published));
+    [...leads, ...rest, ...pool].forEach((g) => used.add(g.lead.cluster || g.lead.id));
     return `<section class="sect" id="s-${s.id}" style="--sc:${s.c}">
       <div class="sect-h"><h2>${s.name}</h2>${full ? "" : `<button class="more" data-tab="${s.id}">More ${esc(s.short)} ›</button>`}</div>
-      <div class="sect-body"><div class="leads">${leads.map(big).join("")}</div><div class="list">${rest.map(row).join("")}</div></div></section>`;
+      <div class="sect-body fit"><div class="leads">${leads.map(big).join("")}${compact(pool)}</div><div class="list">${rest.map(row).join("")}</div></div></section>`;
   }
   function rail(id, title, dotCls, note, n, badge) {
     const list = st.rail[id].filter(match).sort((a, b) => new Date(b.published) - new Date(a.published)).slice(0, n);
@@ -82,7 +94,23 @@
     rail("cves", "Top CVEs &amp; breaches", "red", "CISA KEV (tracked vendors), critical/exploited MSRC CVEs, zero-days and major breaches.", 10, true);
     rail("outages", "Outages &amp; status", "", "Official status feeds (AWS, Azure, Google Cloud, Cloudflare, Microsoft 365) and outage news.", 8, false);
     document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", t.dataset.tab === st.tab));
+    fit();
   }
+  // Balance columns: show compact headlines under the featured card until the left column
+  // reaches the right column's height. When columns stack (mobile), show a short list.
+  function fit() {
+    document.querySelectorAll(".fit").forEach((box) => {
+      const left = box.querySelector(".leads"), right = left.nextElementSibling, lis = [...left.querySelectorAll(".compact li")];
+      if (!lis.length) return;
+      lis.forEach((li) => (li.hidden = false));
+      const stacked = right.getBoundingClientRect().top >= left.getBoundingClientRect().bottom - 1;
+      if (stacked) { lis.forEach((li, n) => (li.hidden = n >= 4)); }
+      else { for (let n = lis.length - 1; n >= 0 && left.offsetHeight > right.offsetHeight + 4; n--) lis[n].hidden = true; }
+      const ul = left.querySelector(".compact"); ul.hidden = lis.every((li) => li.hidden);
+    });
+  }
+  let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(fit, 120); });
+  addEventListener("load", fit);
   function setTab(t, scroll = true) {
     st.tab = t; render();
     if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });

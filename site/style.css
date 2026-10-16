@@ -137,3 +137,14 @@ svg{width:20px;height:20px;fill:currentColor}
 @media (max-width:980px){.side{grid-template-columns:1fr 1fr}}
 @media (max-width:640px){.side{grid-template-columns:1fr} #cves .mini li:nth-child(n+6){display:none}}
 [hidden]{display:none!important}
+
+/* compact headline list under featured cards */
+.compact{list-style:none;margin:14px 0 0;padding:4px 0 0;border-top:1px solid var(--line)}
+.compact li a{display:block;padding:7px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.compact li:last-child a{border-bottom:0}
+.compact .ct{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.9rem;line-height:1.3;font-weight:550}
+.compact a:hover .ct{color:var(--accent)}
+.compact .cm{display:block;font-size:.74rem;color:var(--muted);margin-top:2px;line-height:1.3}
+.compact .vtag{font-size:.62rem;padding:0 5px;margin-left:4px}
+.hero .leads{display:block}
+.fit{align-items:start}

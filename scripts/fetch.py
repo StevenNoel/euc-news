@@ -43,7 +43,10 @@ EUC_TAGS = {"citrix", "netscaler", "xenserver", "vmware", "omnissa", "nutanix", 
 AI_PENALTY = 4  # keep AI moderate in Top Stories; Citrix boost stays highest
 VENDOR_TAGS = AI_TAGS + ["citrix", "netscaler", "xenserver", "vmware", "omnissa", "nutanix", "avd", "w365", "fslogix",
                "microsoft", "windows", "m365", "azure-local", "intune", "igel", "controlup", "unicon"]
-TRUSTED = ("cisa", "msrc", "microsoft", "bleepingcomputer", "the register", "born", "citrix", "omnissa",
+TRUSTED = ("bleeping", "neowin", "windows central", "the verge", "zdnet", "techcrunch", "infoworld", "computerworld",
+           "windows latest", "gizmodo", "9to5google", "thurrott", "petri", "itpro", "techradar", "theregister", "cyberscoop", "dark reading",
+           "the hacker news", "reuters", "bloomberg", "cnbc", "wired", "help net security", "securityweek", "cybersecurity dive", "techtarget", "crn",
+           "cisa", "msrc", "microsoft", "bleepingcomputer", "the register", "born", "citrix", "omnissa",
            "broadcom", "vmware", "nutanix", "igel", "controlup", "securityweek", "ars technica", "carl stalhood")
 TRACKING = re.compile(r"^(utm_|fbclid|gclid|mc_|ocid|cmpid)", re.I)
 
@@ -205,9 +208,9 @@ CVE_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.I)
 KB_RE = re.compile(r"\bKB\d{6,8}\b", re.I)
 STOP = set("a an the and or of for to in on at by with from as is are was were be been it its this that these those how why what who new now after over into about via vs your you our we their his her not can will has have had more than out up off".split())
 CVE_CAP = 40         # CVE & breach items kept for the rail
-TOP_N, TOP_PER_VENDOR, TOP_PER_SECTION = 11, 2, 3
+TOP_N, TOP_PER_VENDOR, TOP_PER_SECTION = 20, 3, 5  # 8 cards + compact list
 CVE_KIND_RE = re.compile(r"\bcve-\d{4}-\d+|zero[- ]day|0-day|actively exploited|exploited in the wild|\bkev\b|data breach|breach(?:ed)?\b|ransomware|"
-                         r"\bvulnerabilit(?:y|ies)\b|security flaw|critical flaw|\bflaws\b|new flaw|\brce\b|remote code execution|security (?:update|patch|bulletin|advisory)", re.I)
+                         r"\bvulnerabilit(?:y|ies)\b|security flaw|critical flaw|reason to patch|urged? to patch|patch now|\bflaws\b|new flaw|\brce\b|remote code execution|security (?:update|patch|bulletin|advisory)", re.I)
 HARDEN_RE = re.compile(r"harden|best practice|zero[- ]trust|\bmfa\b|multi-factor|phishing-resistant|passkey|conditional access|least privilege|"
                        r"security baseline|cis benchmark|attack surface|secure (?:your|the|citrix|netscaler|vdi|avd|microsoft 365|m365|windows|endpoints?|access)|"
                        r"identity (?:protection|security)|privileged access|defender|entra|\bxdr\b|\bedr\b|\bsase\b|\bztna\b", re.I)
@@ -216,6 +219,13 @@ HARDEN_RE = re.compile(r"harden|best practice|zero[- ]trust|\bmfa\b|multi-factor
 def title_tokens(t):
     t = re.sub(r"\s+[-|–]\s+[^-|–]{2,60}$", "", t or "")
     return {w for w in re.sub(r"[^a-z0-9]+", " ", t.lower()).split() if w not in STOP and len(w) > 1}
+
+
+def proper_nouns(t):
+    """Capitalized words/product names after the first word (lowercased), e.g. 'NetScaler', 'Gemini'."""
+    t = re.sub(r"\s+[-|–]\s+[^-|–]{2,60}$", "", t or "")
+    words = re.findall(r"[A-Za-z][A-Za-z0-9.+]*", t)[1:]
+    return {w.lower() for w in words if (w[0].isupper() or any(c.isdigit() for c in w)) and w.lower() not in STOP and len(w) > 2}
 
 
 def jacc(a, b):
@@ -513,13 +523,16 @@ def main():
     # --- Clusters (related coverage): looser title match, same CVE, or same KB ---
     toks = [title_tokens(i["title"]) for i in items]
     keys = [set(m.upper() for m in CVE_RE.findall(i["title"]) + KB_RE.findall(i["title"])) for i in items]
+    ents = [proper_nouns(i["title"]) | (set(i["vendors"]) - {"microsoft", "windows"}) for i in items]
     uf = UF(len(items))
     for x in range(len(items)):
         for y in range(x + 1, len(items)):
             cx, cy = {k for k in keys[x] if k.startswith("CVE")}, {k for k in keys[y] if k.startswith("CVE")}
             if cx and cy and not (cx & cy):
                 continue  # different CVEs are different stories even if titles look alike
-            if (keys[x] & keys[y]) or jacc(toks[x], toks[y]) >= 0.5:
+            j = jacc(toks[x], toks[y])
+            # 0.5 overlap, or 0.4 overlap plus a shared entity (product/vendor/proper noun)
+            if (keys[x] & keys[y]) or j >= 0.5 or (j >= 0.4 and ents[x] & ents[y]):
                 uf.union(x, y)
     members = {}
     for n, i in enumerate(items):
@@ -584,7 +597,7 @@ def main():
     for i in elig:
         i["top_score"] = round(top_score(i), 2)
     multi = sorted([i for i in elig if i["n_sources"] >= 2], key=lambda i: -i["top_score"])
-    fallback = sorted([i for i in elig if i["n_sources"] < 2 and not i.get("vblog") and (i["image"] or any(t in i["source"].lower() for t in TRUSTED))],
+    fallback = sorted([i for i in elig if i["n_sources"] < 2 and not i.get("vblog") and any(t in i["source"].lower() for t in TRUSTED)],
                       key=lambda i: i["published"], reverse=True)
     top, per_v, per_s = [], {}, {}
     for i in multi + fallback:
