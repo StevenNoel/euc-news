@@ -3,7 +3,9 @@
 # type: search -> a keyword news search (Google News RSS / Bing News RSS URL)
 # type: msrc   -> MSRC CVRF API; keeps only Critical, exploited or publicly disclosed CVEs
 # type: kev    -> CISA Known Exploited Vulnerabilities JSON, filtered by kev_vendors
-# security: true -> items always show in the Security section
+# security_vendor / hardening: true -> Security & Hardening section
+# no_top: true -> never shown in Top Stories (releases, reference pages, forums, raw CVE feeds)
+# window_cap: N -> keep at most N items from this feed in the 30-day window
 # outage: true -> items go to the Outages & status panel
 # unreliable_dates: true -> feed stamps every item 'now'; ranked as older in Top Stories
 
@@ -15,15 +17,15 @@ feeds:
   - {name: Windows IT Pro Blog, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=Windows-ITPro-blog", type: rss, tags: [windows, microsoft]}
   - {name: Azure Local Blog, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=AzureStackBlog", type: rss, tags: [azure-local, microsoft]}
   - {name: Microsoft 365 Blog, url: "https://www.microsoft.com/en-us/microsoft-365/blog/feed/", type: rss, tags: [m365, microsoft]}
-  - {name: Microsoft Learn - known issues, url: "https://learn.microsoft.com/api/search/rss?search=%22known+issues%22+Windows&locale=en-us", type: rss, tags: [windows, patch], unreliable_dates: true}
+  - {name: Microsoft Learn - known issues, url: "https://learn.microsoft.com/api/search/rss?search=%22known+issues%22+Windows&locale=en-us", type: rss, tags: [windows, patch], unreliable_dates: true, no_top: true}
   - {name: VMware Blogs (Broadcom), url: "https://blogs.vmware.com/feed", type: rss, tags: [vmware]}
   - {name: ControlUp Blog, url: "https://www.controlup.com/feed/", type: rss, tags: [controlup]}
   - {name: IGEL Blog, url: "https://www.igel.com/feed/", type: rss, tags: [igel]}
   - {name: Nutanix Dev, url: "https://www.nutanix.dev/feed/", type: rss, tags: [nutanix]}
   - {name: Carl Stalhood, url: "https://www.carlstalhood.com/feed/", type: rss, tags: [citrix, community]}
   # --- Security lane ---
-  - {name: CISA KEV, url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json", type: kev, tags: [security, kev], security: true}
-  - {name: MSRC (Critical / exploited / disclosed), url: "https://api.msrc.microsoft.com/cvrf/v3.0/updates", type: msrc, tags: [security, microsoft], security: true}
+  - {name: CISA KEV, url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json", type: kev, tags: [security, kev], security: true, no_top: true}
+  - {name: MSRC (Critical / exploited / disclosed), url: "https://api.msrc.microsoft.com/cvrf/v3.0/updates", type: msrc, tags: [security, microsoft], security: true, no_top: true}
   - {name: BleepingComputer, url: "https://www.bleepingcomputer.com/feed/", type: rss, tags: [security], security: true, require_keywords: true}
   - {name: "Born's Tech and Windows World", url: "https://borncity.com/win/feed/", type: rss, tags: [windows, patch], require_keywords: true}
   - {name: The Register Security, url: "https://www.theregister.com/security/headlines.atom", type: rss, tags: [security], security: true, require_keywords: true}
@@ -41,11 +43,11 @@ feeds:
   - {name: Google Gemini Blog, url: "https://blog.google/products/gemini/rss/", type: rss, tags: [ai, gemini], max_items: 12}
   - {name: Hugging Face Blog, url: "https://huggingface.co/blog/feed.xml", type: rss, tags: [ai, huggingface], max_items: 12}
   - {name: Ollama Blog, url: "https://ollama.com/blog/rss.xml", type: rss, tags: [ai, local-llm], max_items: 12}
-  - {name: Ollama releases, url: "https://github.com/ollama/ollama/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "Ollama", max_items: 3}
-  - {name: llama.cpp releases, url: "https://github.com/ggml-org/llama.cpp/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "llama.cpp", max_items: 2}
-  - {name: OpenClaw releases, url: "https://github.com/openclaw/openclaw/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "OpenClaw", max_items: 3}
-  - {name: Hermes Agent releases (Nous Research), url: "https://github.com/NousResearch/hermes-agent/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "Hermes Agent", max_items: 3}
-  - {name: r/LocalLLaMA, url: "https://www.reddit.com/r/LocalLLaMA/.rss", type: rss, tags: [ai, local-llm], max_items: 12}
+  - {name: Ollama releases, url: "https://github.com/ollama/ollama/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "Ollama", max_items: 3, no_top: true}
+  - {name: llama.cpp releases, url: "https://github.com/ggml-org/llama.cpp/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "llama.cpp", max_items: 2, no_top: true}
+  - {name: OpenClaw releases, url: "https://github.com/openclaw/openclaw/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "OpenClaw", max_items: 3, no_top: true}
+  - {name: Hermes Agent releases (Nous Research), url: "https://github.com/NousResearch/hermes-agent/releases.atom", type: rss, tags: [ai, local-llm], title_prefix: "Hermes Agent", max_items: 3, no_top: true}
+  - {name: r/LocalLLaMA, url: "https://www.reddit.com/r/LocalLLaMA/.rss", type: rss, tags: [ai, local-llm], max_items: 12, no_top: true}
   - {name: "Google News: Grok", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Grok+xAI", type: search, tags: [ai, grok], max_items: 12}
   - {name: "Bing News: Grok", url: "https://www.bing.com/news/search?format=rss&q=Grok+xAI", type: search, tags: [ai, grok], max_items: 12}
   - {name: "Google News: Claude", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Claude+AI", type: search, tags: [ai, claude], max_items: 12}
@@ -65,6 +67,24 @@ feeds:
   - {name: George Spiers (EUC blog), url: "https://www.jgspiers.com/feed/", type: rss, tags: [citrix, community]}
   - {name: Dennis Span (EUC blog), url: "https://www.dennisspan.com/feed/", type: rss, tags: [citrix, community]}
   - {name: Christiaan Brinkhoff (W365/AVD blog), url: "https://christiaanbrinkhoff.com/feed/", type: rss, tags: [w365, community]}
+  # --- Security & hardening (security vendors' product/guidance blogs; capped per feed) ---
+  - {name: Microsoft Security Blog, url: "https://www.microsoft.com/en-us/security/blog/feed/", type: rss, tags: [microsoft], security_vendor: true, window_cap: 8}
+  - {name: Microsoft Security Tech Community, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=microsoft-security-blog", type: rss, tags: [microsoft], security_vendor: true, window_cap: 8}
+  - {name: Intune Customer Success, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=IntuneCustomerSuccess", type: rss, tags: [intune, microsoft], window_cap: 8}
+  - {name: CrowdStrike Blog, url: "https://www.crowdstrike.com/en-us/blog/feed", type: rss, tags: [], security_vendor: true, window_cap: 6}
+  - {name: SentinelOne Blog, url: "https://www.sentinelone.com/blog/feed/", type: rss, tags: [], security_vendor: true, window_cap: 6}
+  - {name: Palo Alto Networks Blog, url: "https://www.paloaltonetworks.com/blog/feed/", type: rss, tags: [], security_vendor: true, window_cap: 6}
+  - {name: Zscaler Blog, url: "https://www.zscaler.com/blogs/feeds/company-news", type: rss, tags: [], security_vendor: true, window_cap: 6}
+  - {name: Netskope Blog, url: "https://www.netskope.com/feed", type: rss, tags: [], security_vendor: true, window_cap: 6}
+  - {name: "Google News: Citrix/NetScaler hardening", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%28Citrix+OR+NetScaler%29+%28hardening+OR+%22security+best+practices%22+OR+%22secure+Citrix%22%29", type: search, tags: [], hardening: true, window_cap: 10}
+  - {name: "Google News: Zero trust VDI", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22zero+trust%22+%28VDI+OR+%22virtual+desktop%22+OR+AVD+OR+Citrix+OR+%22Windows+365%22%29", type: search, tags: [], hardening: true, window_cap: 10}
+  - {name: "Google News: M365 / Entra security best practices", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%28%22Microsoft+365%22+OR+Entra+OR+Intune%29+%28%22security+best+practices%22+OR+hardening+OR+%22conditional+access%22+OR+MFA%29", type: search, tags: [], hardening: true, window_cap: 10}
+  - {name: "Google News: Windows hardening", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Windows+%28%22security+baseline%22+OR+hardening+OR+%22attack+surface+reduction%22%29", type: search, tags: [], hardening: true, window_cap: 10}
+  - {name: "Bing News: Security hardening", url: "https://www.bing.com/news/search?format=rss&q=endpoint+security+hardening+best+practices", type: search, tags: [], hardening: true, window_cap: 10}
+  - {name: "Bing News: Zero trust VDI", url: "https://www.bing.com/news/search?format=rss&q=zero+trust+VDI", type: search, tags: [], hardening: true, window_cap: 10}
+  # --- Top CVEs & breaches (right rail) ---
+  - {name: "Google News: Major breaches", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22data+breach%22+OR+ransomware+attack+%28million+OR+major+OR+confirms%29", type: search, tags: [], window_cap: 10}
+  - {name: "Google News: Critical zero-days", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%28%22zero-day%22+OR+%22actively+exploited%22%29+critical+vulnerability", type: search, tags: [], window_cap: 10}
   # --- Keyword searches ---
   - {name: "Google News: Intune", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22Microsoft+Intune%22", type: search, tags: [intune, microsoft]}
   - {name: "Bing News: Intune", url: "https://www.bing.com/news/search?format=rss&q=Microsoft+Intune", type: search, tags: [intune, microsoft]}
@@ -131,20 +151,3 @@ tag_keywords:
   huggingface: ["hugging face", huggingface]
   local-llm: [ollama, "llama.cpp", "lm studio", gguf, quantiz, "local llm", "localllama", openclaw, "hermes agent", "low vram"]
   security: [cve-, vulnerability, exploit, zero-day, "0-day", ransomware, "security update", advisory]
-
-# Curated EUC X accounts shown in "X / Community" (profile links, no API needed).
-# Add/remove handles here.
-x_accounts:
-  - {handle: citrix, note: Citrix}
-  - {handle: NetScaler, note: NetScaler}
-  - {handle: OmnissaEUC, note: Omnissa}
-  - {handle: ControlUp, note: ControlUp}
-  - {handle: IGEL_Tech, note: IGEL}
-  - {handle: nutanix, note: Nutanix}
-  - {handle: MSWindowsITPro, note: Windows IT Pro}
-  - {handle: Microsoft365, note: Microsoft 365}
-  - {handle: CISAgov, note: CISA}
-  - {handle: msftsecresponse, note: MSRC}
-  - {handle: BleepinComputer, note: BleepingComputer}
-  - {handle: etguenni, note: "Born's Tech and Windows World"}
-  - {handle: CStalhood, note: Carl Stalhood}

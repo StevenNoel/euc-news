@@ -29,14 +29,14 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: data/items.json
-          key: items-v4-${{ github.run_id }}
-          restore-keys: items-v4-
+          key: items-v5-${{ github.run_id }}
+          restore-keys: items-v5-
       - run: python scripts/fetch.py
       - name: Save data
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: data/items.json
-          key: items-v4-${{ github.run_id }}
+          key: items-v5-${{ github.run_id }}
       - name: Assemble site
         run: |
           mkdir -p _site/data

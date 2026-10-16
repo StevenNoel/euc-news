@@ -32,19 +32,11 @@
   <div class="layout">
     <main id="main" aria-live="polite"></main>
     <aside class="side">
+      <section class="panel" id="cves"></section>
       <section class="panel" id="outages"></section>
-      <section class="panel" id="community"></section>
     </aside>
   </div>
 </div>
-<dialog id="customize" aria-labelledby="custTitle">
-  <div class="cust-in">
-    <div class="cust-h"><h2 id="custTitle">Customize sections</h2><button id="custDone" class="btn primary">Done</button></div>
-    <p class="cust-help">Drag to reorder, or use the arrows. Untick a section to hide it. Saved in this browser.</p>
-    <ol id="custList" class="cust-list"></ol>
-    <div class="cust-f"><button id="custReset" class="btn">Reset to default</button></div>
-  </div>
-</dialog>
 <footer class="foot">Headlines link to the original publishers. Refreshed every 4 hours. <a href="https://github.com/StevenNoel/euc-news">Source on GitHub</a></footer>
 <script src="app.js"></script>
 </body>

@@ -172,7 +172,9 @@ def is_gn(it):
 def section_of(it):
     if it.get("outage"):
         return "outages"
-    if it.get("security"):
+    if it.get("kind") == "cve":
+        return "cves"
+    if it.get("kind") == "hardening":
         return "security"
     if ("ai" in it["tags"] or set(AI_TAGS) & set(it["tags"])) and not (EUC_TAGS & set(it["tags"])):
         return "ai"
@@ -202,7 +204,13 @@ SEC_RE = re.compile(r"zero[- ]day|0-day|actively exploited|exploited|in the wild
 CVE_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.I)
 KB_RE = re.compile(r"\bKB\d{6,8}\b", re.I)
 STOP = set("a an the and or of for to in on at by with from as is are was were be been it its this that these those how why what who new now after over into about via vs your you our we their his her not can will has have had more than out up off".split())
-SEC_CAP = 40  # max Security clusters kept
+CVE_CAP = 40         # CVE & breach items kept for the rail
+TOP_N, TOP_PER_VENDOR, TOP_PER_SECTION = 11, 2, 3
+CVE_KIND_RE = re.compile(r"\bcve-\d{4}-\d+|zero[- ]day|0-day|actively exploited|exploited in the wild|\bkev\b|data breach|breach(?:ed)?\b|ransomware|"
+                         r"\bvulnerabilit(?:y|ies)\b|security flaw|critical flaw|\bflaws\b|new flaw|\brce\b|remote code execution|security (?:update|patch|bulletin|advisory)", re.I)
+HARDEN_RE = re.compile(r"harden|best practice|zero[- ]trust|\bmfa\b|multi-factor|phishing-resistant|passkey|conditional access|least privilege|"
+                       r"security baseline|cis benchmark|attack surface|secure (?:your|the|citrix|netscaler|vdi|avd|microsoft 365|m365|windows|endpoints?|access)|"
+                       r"identity (?:protection|security)|privileged access|defender|entra|\bxdr\b|\bedr\b|\bsase\b|\bztna\b", re.I)
 
 
 def title_tokens(t):
@@ -428,23 +436,35 @@ def main():
     items = [i for i in by_key.values() if i["published"] >= cutoff]
     stats["in_window_before_dedupe"] = len(items)
 
-    # --- Security: only critical / exploited / high-impact ---
+    # --- Classify: CVE/breach rail vs. security hardening vs. topic sections ---
+    feeds_cfg = {f["name"]: f for f in cfg.get("feeds", [])}
     kept = []
     for i in items:
-        i.pop("category", None)
-        i.setdefault("image", None); i.setdefault("sources", []); i.setdefault("related", [])
+        i.pop("category", None); i.pop("score", None)
+        for k in ("image",):
+            i.setdefault(k, None)
+        i.setdefault("sources", []); i.setdefault("related", [])
         i["tags"] = sorted(set(i["tags"]) - {"security"})
-        if i["source"] in ("CISA KEV", "MSRC"):
-            i["security"] = True
-        elif not i.get("outage"):
-            i["security"] = bool(SEC_RE.search(f"{i['title']} {i['summary']}"))
-        i["vendors"] = [t for t in VENDOR_TAGS if t in i["tags"]]
-        if i["security"]:
-            i["tags"] = sorted(set(i["tags"]) | {"security"})
-        elif not i.get("outage") and not i["vendors"]:  # demoted from Security and no EUC vendor -> drop
-            continue
         if i["source"] == "MSRC Security Update Guide":  # legacy RSS items from cache
             continue
+        f = feeds_cfg.get(i.get("feed"), {})
+        txt = f"{i['title']} {i['summary']}"
+        i["notop"] = (bool(f.get("no_top")) or i["source"] in ("CISA KEV", "MSRC")
+                      or bool(re.search(r"newswire|press release|marketscreener|globenewswire|business wire|\bpr\b", i["source"], re.I))
+                      or bool(re.match(r"\[(pr ?newswire|business ?wire|globe ?newswire)\]", i["title"], re.I))
+                      or not re.fullmatch(r"[\x00-\u024f\u2000-\u206f\u2122\u00ae]*", i["title"]))
+        i["kind"] = ""
+        i["vblog"] = bool(f.get("security_vendor"))
+        if i.get("outage"):
+            pass
+        elif i["source"] in ("CISA KEV", "MSRC") or CVE_KIND_RE.search(txt):
+            i["kind"] = "cve"
+        elif not f.get("no_top") and (f.get("security_vendor") or f.get("hardening") or HARDEN_RE.search(i["title"])):
+            i["kind"] = "hardening"
+        i["security"] = bool(i["kind"])
+        i["vendors"] = [t for t in VENDOR_TAGS if t in i["tags"]]
+        if not (i.get("outage") or i["kind"] or i["vendors"]):
+            continue  # nothing EUC-relevant
         kept.append(i)
     items = kept
 
@@ -510,46 +530,82 @@ def main():
     for root, g in members.items():
         cov = {s for i in g for s in [i["source"], *i["sources"]]}
         for i in g:
-            age_h = 48 if i.get("undated") else (NOW - datetime.strptime(i["published"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)).total_seconds() / 3600
-            txt = f"{i['title']} {i['summary']}".lower()
-            sev = 4 if i["source"] == "CISA KEV" or re.search(r"zero[- ]day|0-day|exploited", txt) else (2 if i["security"] else 0)
-            citrix = 5 if {"citrix", "netscaler"} & set(i["vendors"]) else 0  # Steve: boost Citrix highest
+            i["_age"] = 48 if i.get("undated") else (NOW - datetime.strptime(i["published"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)).total_seconds() / 3600
             trust = 1.5 if any(t in i["source"].lower() for t in TRUSTED) else 0
-            i["score"] = round(10 * 0.5 ** (age_h / 36) + 1.2 * len(i["vendors"][:3]) + 2 * min(len(cov) - 1, 4)
-                               + sev + trust + citrix + (1 if i["image"] else 0)
+            citrix = 1 if {"citrix", "netscaler"} & set(i["vendors"]) else 0  # small EUC tie-breaker only
+            # section ranking: recency + coverage + authority (no big vendor boosts)
+            i["score"] = round(10 * 0.5 ** (i["_age"] / 36) + 2 * min(len(cov) - 1, 5) + trust + citrix
+                               + 0.8 * len(i["vendors"][:2]) + (1 if i["image"] else 0)
                                - (AI_PENALTY if i["section"] == "ai" else 0), 2)
-        g.sort(key=lambda i: (i["score"], bool(i["image"])), reverse=True)
+        g.sort(key=lambda i: (i["score"], bool(i["image"]), not i["notop"]), reverse=True)
         lead = g[0]
-        for i in g:  # one cluster -> one section (the lead's)
+        for i in g:  # one cluster -> one section (the lead's); cluster coverage on every member
             i["cluster"] = lead["id"]
             i["section"] = lead["section"]
+            i["n_sources"] = len(cov)
 
-    # --- Cap AI per source across the whole rolling window (newest kept) ---
-    ai_caps = {f["name"]: f.get("max_items", 12) for f in cfg.get("feeds", []) if "ai" in f.get("tags", [])}
+    # --- Per-feed window caps (AI feeds default 12; any feed can set window_cap) ---
+    caps = {f["name"]: f.get("window_cap", f.get("max_items", 12)) for f in cfg.get("feeds", [])
+            if "ai" in f.get("tags", []) or "window_cap" in f}
     per_feed, kept = {}, []
     for i in sorted(items, key=lambda i: i["published"], reverse=True):
         f = i.get("feed")
-        if i["section"] == "ai" and f in ai_caps:
+        if f in caps:
             per_feed[f] = per_feed.get(f, 0) + 1
-            if per_feed[f] > ai_caps[f]:
+            if per_feed[f] > caps[f]:
                 continue
         kept.append(i)
-    stats["ai_capped"] = len(items) - len(kept)
+    stats["feed_capped"] = len(items) - len(kept)
     items = kept
 
-    # --- Cap Security ---
-    sec_clusters = sorted({i["cluster"] for i in items if i["section"] == "security"},
-                          key=lambda c: -max(x["score"] for x in items if x["cluster"] == c))
-    drop = set(sec_clusters[SEC_CAP:])
-    stats["security_clusters_capped"] = len(drop)
-    items = [i for i in items if i["cluster"] not in drop]
+    # --- CVE & breach rail: newest high-impact, capped ---
+    cves = sorted([i for i in items if i["section"] == "cves"], key=lambda i: i["published"], reverse=True)
+    drop = {i["id"] for i in cves[CVE_CAP:]}
+    items = [i for i in items if i["id"] not in drop]
+    for i in items:
+        if i["section"] == "cves":
+            t = f"{i['title']} {i['summary']}".lower()
+            i["badge"] = ("KEV" if i["source"] == "CISA KEV" else
+                          "Zero-day" if re.search(r"zero[- ]day|0-day", t) else
+                          "Exploited" if "exploited" in t or "in the wild" in t else
+                          "Breach" if re.search(r"breach|ransomware|leak", t) else
+                          "Critical" if "critical" in t or re.search(r"cvss:? ?(9|10)", t) else "High")
+
+    # --- Top Stories: multi-publisher coverage first, recency decay, authority; diversity caps ---
+    leads = {}
+    for i in items:
+        if i["cluster"] == i["id"]:
+            leads[i["id"]] = i
+    def top_score(i):
+        trust = 2 if any(t in i["source"].lower() for t in TRUSTED) else 0
+        return 4 * min(i["n_sources"] - 1, 6) + 8 * 0.5 ** (i["_age"] / 24) + trust + (0.5 if i["image"] else 0)
+    elig = [i for i in leads.values() if not i["notop"] and i["section"] not in ("cves", "outages")
+            and i["_age"] <= 168 and not i.get("undated")]
+    for i in elig:
+        i["top_score"] = round(top_score(i), 2)
+    multi = sorted([i for i in elig if i["n_sources"] >= 2], key=lambda i: -i["top_score"])
+    fallback = sorted([i for i in elig if i["n_sources"] < 2 and not i.get("vblog") and (i["image"] or any(t in i["source"].lower() for t in TRUSTED))],
+                      key=lambda i: i["published"], reverse=True)
+    top, per_v, per_s = [], {}, {}
+    for i in multi + fallback:
+        v = (i["vendors"] or ["_none"])[0]
+        if per_v.get(v, 0) >= TOP_PER_VENDOR or per_s.get(i["section"], 0) >= (2 if i["section"] == "ai" else TOP_PER_SECTION):
+            continue
+        per_v[v] = per_v.get(v, 0) + 1; per_s[i["section"]] = per_s.get(i["section"], 0) + 1
+        top.append(i["id"])
+        if len(top) >= TOP_N:
+            break
+    for i in items:
+        i.pop("_age", None)
+    stats["top_multi_source"] = sum(1 for t in top if leads[t]["n_sources"] >= 2)
     stats["total"] = len(items)
     stats["security_items"] = sum(1 for i in items if i["section"] == "security")
+    stats["cve_items"] = sum(1 for i in items if i["section"] == "cves")
     stats["clusters"] = len({i["cluster"] for i in items})
     print("stats:", stats)
 
     out = {"updated": NOW.strftime("%Y-%m-%dT%H:%M:%SZ"), "window_days": WINDOW_DAYS,
-           "count": len(items), "stats": stats, "feeds": status, "x_accounts": cfg.get("x_accounts", []),
+           "count": len(items), "stats": stats, "feeds": status, "top": top,
            "items": items}
     DATA.parent.mkdir(parents=True, exist_ok=True)
     DATA.write_text(json.dumps(out, indent=1, ensure_ascii=False))
