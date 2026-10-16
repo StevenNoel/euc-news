@@ -84,9 +84,16 @@ feeds:
   # --- Top CVEs & breaches (right rail) ---
   - {name: "Google News: Major breaches", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22data+breach%22+OR+ransomware+attack+%28million+OR+major+OR+confirms%29", type: search, tags: [], window_cap: 10}
   - {name: "Google News: Critical zero-days", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%28%22zero-day%22+OR+%22actively+exploited%22%29+critical+vulnerability", type: search, tags: [], window_cap: 10}
+  # --- Endpoints & management ---
+  - {name: Jamf Blog, url: "https://www.jamf.com/blog/rss/", type: rss, tags: [jamf], window_cap: 10}
+  - {name: Patch My PC Blog, url: "https://patchmypc.com/feed", type: rss, tags: [patchmypc, intune]}
+  - {name: "Google News: Jamf", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Jamf", type: search, tags: [jamf], window_cap: 12}
+  - {name: "Bing News: Jamf", url: "https://www.bing.com/news/search?format=rss&q=Jamf", type: search, tags: [jamf]}
+  - {name: "Google News: Patch My PC", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22Patch+My+PC%22", type: search, tags: [patchmypc], window_cap: 12}
+  - {name: "Google News: Workspace ONE UEM", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22Workspace+ONE+UEM%22+OR+%22Omnissa+UEM%22", type: search, tags: [uem, omnissa]}
+  - {name: "Bing News: Intune", url: "https://www.bing.com/news/search?format=rss&q=Intune", type: search, tags: [intune, microsoft]}
   # --- Keyword searches ---
   - {name: "Google News: Intune", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=%22Microsoft+Intune%22", type: search, tags: [intune, microsoft]}
-  - {name: "Bing News: Intune", url: "https://www.bing.com/news/search?format=rss&q=Microsoft+Intune", type: search, tags: [intune, microsoft]}
   - {name: "Google News: Citrix", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=Citrix+%28CVAD+OR+%22Virtual+Apps+and+Desktops%22+OR+StoreFront+OR+%22Citrix+Director%22+OR+DaaS+OR+XenServer%29", type: search, tags: [citrix]}
   - {name: "Bing News: Citrix", url: "https://www.bing.com/news/search?format=rss&q=Citrix+%28CVAD+OR+%22Virtual+Apps+and+Desktops%22+OR+StoreFront+OR+%22Citrix+Director%22+OR+DaaS+OR+XenServer%29", type: search, tags: [citrix]}
   - {name: "Google News: NetScaler", url: "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=NetScaler", type: search, tags: [citrix, netscaler]}
@@ -128,6 +135,9 @@ tag_keywords:
   netscaler: [netscaler, "citrix adc", "citrix gateway"]
   xenserver: [xenserver]
   intune: [intune, "endpoint manager"]
+  jamf: [jamf]
+  patchmypc: ["patch my pc"]
+  uem: ["workspace one uem", "omnissa uem", " uem "]
   unicon: [unicon, elux]
   microsoft: [microsoft]
   fslogix: [fslogix]

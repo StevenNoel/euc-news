@@ -148,3 +148,11 @@ svg{width:20px;height:20px;fill:currentColor}
 .compact .vtag{font-size:.62rem;padding:0 5px;margin-left:4px}
 .hero .leads{display:block}
 .fit{align-items:start}
+
+/* adaptive layout for small sections */
+.fit.stack{grid-template-columns:1fr}
+.fit.stack .leads{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start}
+.fit.stack .leads .big .img{aspect-ratio:16/8}
+.fit.stack .leads .compact{margin-top:0;border-top:0;padding-top:0}
+.fit.stack .list{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
+.fit.stack .list .row:nth-child(2){border-top:0;padding-top:0}

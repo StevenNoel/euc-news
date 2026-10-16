@@ -1,5 +1,9 @@
 (() => {
   const $ = (s) => document.querySelector(s);
+  // secondary tags that may fill a section's compact list from other sections' pools
+  const SEC_TAGS = { security: [], virtualization: ["citrix", "netscaler", "xenserver", "vmware", "omnissa", "nutanix", "avd", "w365", "fslogix"],
+    windows: ["windows"], cloud: ["m365", "azure-local"], endpoints: ["igel", "controlup", "unicon", "intune", "jamf", "patchmypc", "uem"],
+    ai: ["grok", "claude", "openai", "gemini", "huggingface", "local-llm"] };
   const SECTIONS = [
     { id: "top", name: "Top Stories" },
     { id: "security", name: "Security & Hardening", short: "Security", c: "#c24a3f" },
@@ -11,7 +15,7 @@
   ];
   const VENDORS = { citrix: "Citrix", netscaler: "NetScaler", xenserver: "XenServer", vmware: "VMware", omnissa: "Omnissa",
     nutanix: "Nutanix", avd: "AVD", w365: "Windows 365", fslogix: "FSLogix", microsoft: "Microsoft", windows: "Windows",
-    m365: "M365", "azure-local": "Azure Local", intune: "Intune", igel: "IGEL", controlup: "ControlUp", unicon: "Unicon",
+    m365: "M365", "azure-local": "Azure Local", intune: "Intune", jamf: "Jamf", patchmypc: "Patch My PC", uem: "UEM", igel: "IGEL", controlup: "ControlUp", unicon: "Unicon",
     grok: "Grok", claude: "Claude", openai: "OpenAI", gemini: "Gemini", huggingface: "Hugging Face", "local-llm": "Local LLM" };
   const st = { all: [], rail: { cves: [], outages: [] }, top: [], tab: "top", q: "", vendor: "" };
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -72,7 +76,18 @@
     gs = pickLead(gs);
     const nLead = full ? 2 : 1, leads = gs.slice(0, nLead);
     const nRows = full ? 30 : 6;
-    const rest = gs.slice(nLead, nLead + nRows), pool = gs.slice(nLead + nRows, nLead + nRows + (full ? 30 : 10));
+    const rest = gs.slice(nLead, nLead + nRows);
+    // compact pool: unused section stories (incl. older ones from the 30-day window), then other-section stories with a matching tag
+    const taken = new Set([...used, ...gs.slice(0, nLead + nRows).map((g) => g.lead.cluster || g.lead.id)]);
+    const older = clusters(items.filter((it) => it.section === s.id)).sort((a, b) => new Date(b.lead.published) - new Date(a.lead.published));
+    const tagged = clusters(items.filter((it) => it.section !== s.id && it.vendors.some((v) => (SEC_TAGS[s.id] || []).includes(v))))
+      .sort((a, b) => b.lead.score - a.lead.score);
+    const pool = [];
+    for (const g of [...gs.slice(nLead + nRows), ...older, ...tagged]) {
+      const k = g.lead.cluster || g.lead.id;
+      if (taken.has(k)) continue; taken.add(k); pool.push(g);
+      if (pool.length >= (full ? 30 : 10)) break;
+    }
     if (full) rest.sort((a, b) => new Date(b.lead.published) - new Date(a.lead.published));
     [...leads, ...rest, ...pool].forEach((g) => used.add(g.lead.cluster || g.lead.id));
     return `<section class="sect" id="s-${s.id}" style="--sc:${s.c}">
@@ -100,15 +115,20 @@
   // reaches the right column's height. When columns stack (mobile), show a short list.
   function fit() {
     document.querySelectorAll(".fit").forEach((box) => {
+      box.classList.remove("stack");
       const left = box.querySelector(".leads"), right = left.nextElementSibling, lis = [...left.querySelectorAll(".compact li")];
-      if (!lis.length) return;
+      const gap = () => right.offsetHeight - left.offsetHeight;
+      if (!lis.length) { if (gap() > 60 && !isStacked()) box.classList.add("stack"); return; }
       lis.forEach((li) => (li.hidden = false));
-      const stacked = right.getBoundingClientRect().top >= left.getBoundingClientRect().bottom - 1;
+      const stacked = isStacked() || right.getBoundingClientRect().top >= left.getBoundingClientRect().bottom - 1;
       if (stacked) { lis.forEach((li, n) => (li.hidden = n >= 4)); }
       else { for (let n = lis.length - 1; n >= 0 && left.offsetHeight > right.offsetHeight + 4; n--) lis[n].hidden = true; }
       const ul = left.querySelector(".compact"); ul.hidden = lis.every((li) => li.hidden);
+      // still short with every headline shown -> adaptive layout: wide featured card on top, rows in a grid below
+      if (!stacked && gap() > 60) { box.classList.add("stack"); lis.forEach((li, n) => (li.hidden = n >= 4)); ul.hidden = false; }
     });
   }
+  const isStacked = () => matchMedia("(max-width:980px)").matches;
   let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(fit, 120); });
   addEventListener("load", fit);
   function setTab(t, scroll = true) {

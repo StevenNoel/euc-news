@@ -33,7 +33,7 @@ BROWSER_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Ge
 # Topic sections, first match wins (security is decided separately).
 SECTIONS = [
     ("virtualization", {"citrix", "netscaler", "vmware", "omnissa", "nutanix", "xenserver", "avd", "w365", "fslogix"}),
-    ("endpoints", {"igel", "controlup", "unicon", "intune"}),
+    ("endpoints", {"igel", "controlup", "unicon", "intune", "jamf", "patchmypc", "uem"}),
     ("cloud", {"m365", "azure-local"}),
     ("windows", {"windows", "patch", "microsoft"}),
 ]
@@ -48,10 +48,10 @@ def trusted_outlet(src):
 
 AI_TAGS = ["grok", "claude", "openai", "gemini", "huggingface", "local-llm"]
 EUC_TAGS = {"citrix", "netscaler", "xenserver", "vmware", "omnissa", "nutanix", "avd", "w365", "fslogix",
-            "m365", "azure-local", "intune", "igel", "controlup", "unicon"}
+            "m365", "azure-local", "intune", "igel", "controlup", "unicon", "jamf", "patchmypc", "uem"}
 AI_PENALTY = 4  # keep AI moderate in Top Stories; Citrix boost stays highest
 VENDOR_TAGS = AI_TAGS + ["citrix", "netscaler", "xenserver", "vmware", "omnissa", "nutanix", "avd", "w365", "fslogix",
-               "microsoft", "windows", "m365", "azure-local", "intune", "igel", "controlup", "unicon"]
+               "microsoft", "windows", "m365", "azure-local", "intune", "jamf", "patchmypc", "uem", "igel", "controlup", "unicon"]
 TRUSTED = ("bleeping", "neowin", "windows central", "the verge", "zdnet", "techcrunch", "infoworld", "computerworld",
            "windows latest", "gizmodo", "9to5google", "thurrott", "petri", "itpro", "techradar", "theregister", "cyberscoop", "dark reading",
            "the hacker news", "reuters", "bloomberg", "cnbc", "wired", "help net security", "securityweek", "cybersecurity dive", "techtarget", "crn",
@@ -68,6 +68,13 @@ def clean_url(u):
         return urlunparse(("", host, p.path.rstrip("/"), "", urlencode(sorted(q)), "")).lstrip("/")
     except Exception:
         return u
+
+
+WIRE_RE = re.compile(r"^\s*(?:\[(?:pr ?newswire|business ?wire|globe ?newswire|accesswire|newsfile|eqs)[^\]]*\]|(?:eqs-news|eqs-adhoc|pr newswire|business wire)\s*[:\-–])\s*", re.I)
+
+
+def clean_title(t):
+    return WIRE_RE.sub("", t or "").strip()
 
 
 def strip_html(s, n=400):
@@ -464,6 +471,7 @@ def main():
             i.setdefault(k, None)
         i.setdefault("sources", []); i.setdefault("related", [])
         i["tags"] = sorted(set(i["tags"]) - {"security"})
+        i["title"] = clean_title(i["title"])
         if i["source"] == "MSRC Security Update Guide":  # legacy RSS items from cache
             continue
         f = feeds_cfg.get(i.get("feed"), {})
