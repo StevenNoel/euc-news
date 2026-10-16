@@ -145,6 +145,7 @@
     $("#chips").innerHTML = `<button class="chip" data-v="" aria-pressed="${!st.vendor}">All vendors</button>` +
       Object.keys(VENDORS).filter((v) => n[v]).map((v) => `<button class="chip" data-v="${v}" aria-pressed="${st.vendor === v}">${VENDORS[v]}</button>`).join("");
   }
+  $("#chips").addEventListener("scroll", (e) => e.target.classList.toggle("scrolled", e.target.scrollLeft > 4), { passive: true });
   let t; $("#q").addEventListener("input", (e) => { clearTimeout(t); t = setTimeout(() => { st.q = e.target.value.trim(); render(); }, 160); });
   $("#theme").addEventListener("click", () => {
     const r = document.documentElement, cur = r.dataset.theme === "auto" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : r.dataset.theme;

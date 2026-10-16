@@ -156,3 +156,14 @@ svg{width:20px;height:20px;fill:currentColor}
 .fit.stack .leads .compact{margin-top:0;border-top:0;padding-top:0}
 .fit.stack .list{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
 .fit.stack .list .row:nth-child(2){border-top:0;padding-top:0}
+
+/* filter row: chips wrap on desktop, scroll with edge fade on mobile; "Updated" on its own line */
+.filters{flex-direction:column;align-items:stretch;gap:6px}
+.chips{flex-wrap:wrap;overflow:visible}
+.updated{align-self:flex-end;white-space:normal}
+@media (max-width:640px){
+  .chips{flex-wrap:nowrap;overflow-x:auto;padding-right:28px;
+    -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
+  .chips.scrolled{-webkit-mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 36px),transparent)}
+  .updated{align-self:flex-start}
+}
