@@ -354,6 +354,38 @@ def fetch_rss(feed, tag_map):
     return out
 
 
+def fetch_aem_index(feed, tag_map):
+    """AEM Edge Delivery sites (citrix.com) have no RSS; read the public query-index.json,
+    take the newest paths under path_prefix, and read published-time / og:image from each page."""
+    data = get(feed["url"]).json().get("data", [])
+    base = "{0.scheme}://{0.netloc}".format(urlparse(feed["url"]))
+    rows = sorted((d for d in data if d.get("path", "").startswith(feed.get("path_prefix", "/"))
+                   and re.search(feed.get("path_regex", ""), d.get("path", ""))),
+                  key=lambda d: int(d.get("lastModified") or 0), reverse=True)[: int(feed.get("max_pages", 15))]
+    out = []
+    for d in rows:
+        link = base + d["path"]
+        try:
+            html = requests.get(link, headers={"User-Agent": BROWSER_UA}, timeout=10).text
+        except Exception:
+            continue
+        m = re.search(r'<meta name="published-time" content="([^"]+)"', html)
+        img = re.search(r'<meta property="og:image" content="([^"]+)"', html)
+        try:
+            dt = datetime.fromisoformat(m.group(1).replace("Z", "+00:00")) if m else None
+        except Exception:
+            dt = None
+        if not dt or dt < CUTOFF:
+            continue
+        title = (d.get("title") or "").strip()
+        summary = strip_html(d.get("description") or "")
+        matched = tag_text(f"{title} {summary}", tag_map)
+        out.append(dict(title=title, link=link, summary=summary, source=feed.get("source", urlparse(base).netloc.removeprefix("www.")),
+                        published=dt, undated=False, tags=set(feed.get("tags", [])) | matched, security=False, outage=False,
+                        image=img.group(1).replace("&#x26;", "&") if img else None, feed=feed["name"]))
+    return out
+
+
 def fetch_kev(feed, vendors):
     data = get(feed["url"]).json()
     out = []
@@ -434,7 +466,8 @@ def main():
     for feed in cfg.get("feeds", []):
         try:
             items = (fetch_kev(feed, vendors) if feed["type"] == "kev" else
-                     fetch_msrc(feed, CUTOFF) if feed["type"] == "msrc" else fetch_rss(feed, tag_map))
+                     fetch_msrc(feed, CUTOFF) if feed["type"] == "msrc" else
+                     fetch_aem_index(feed, tag_map) if feed["type"] == "aem_index" else fetch_rss(feed, tag_map))
             status.append({"name": feed["name"], "ok": True, "count": len(items)})
             new.extend(items)
             print(f"OK   {len(items):4d}  {feed['name']}")
@@ -530,7 +563,7 @@ def main():
             pass
         elif i["source"] in ("CISA KEV", "MSRC") or CVE_KIND_RE.search(txt):
             i["kind"] = "cve"
-        elif not f.get("no_top") and (f.get("security_vendor") or f.get("hardening") or HARDEN_RE.search(i["title"])):
+        elif not f.get("no_top") and not f.get("product_blog") and (f.get("security_vendor") or f.get("hardening") or HARDEN_RE.search(i["title"])):
             i["kind"] = "hardening"
         i["security"] = bool(i["kind"])
         i["vendors"] = [t for t in VENDOR_TAGS if t in i["tags"]]

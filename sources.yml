@@ -2,6 +2,8 @@
 # type: rss    -> a normal RSS/Atom feed
 # type: search -> a keyword news search (Google News RSS / Bing News RSS URL)
 # type: msrc   -> MSRC CVRF API; keeps only Critical, exploited or publicly disclosed CVEs
+# type: aem_index -> AEM Edge Delivery query-index.json (citrix.com/blogs); newest max_pages under path_prefix
+# product_blog: true -> vendor product blog; stays in its product section (not reclassified as Security)
 # type: kev    -> CISA Known Exploited Vulnerabilities JSON, filtered by kev_vendors
 # security_vendor / hardening: true -> Security & Hardening section
 # no_top: true -> never shown in Top Stories (releases, reference pages, forums, raw CVE feeds)
@@ -11,7 +13,11 @@
 
 feeds:
   # --- Vendor / product blogs ---
-  - {name: Citrix Community Blogs, url: "https://community.citrix.com/rss/1-citrix-blogs.xml", type: rss, tags: [citrix]}
+  # citrix.com/blogs has no RSS (/blogs/feed, wp-json and blogs sitemap 404); it is an AEM Edge Delivery site whose public
+  # query-index.json lists every page. type aem_index reads it and takes published-time/og:image from each new post.
+  - {name: Citrix Blog, url: "https://www.citrix.com/query-index.json", type: aem_index, path_prefix: "/blogs/", path_regex: "^/blogs/\\d{4}-\\d{2}/", max_pages: 15, product_blog: true, source: "Citrix Blog", tags: [citrix]}
+  # This community feed is Tech Zone documentation change history, not the Citrix blog.
+  - {name: Citrix Tech Zone (doc updates), url: "https://community.citrix.com/rss/1-citrix-blogs.xml", type: rss, tags: [citrix], no_top: true, window_cap: 10}
   - {name: Azure Virtual Desktop Blog, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=AzureVirtualDesktopBlog", type: rss, tags: [avd, microsoft]}
   - {name: FSLogix Blog, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=FSLogix-Blog", type: rss, tags: [fslogix, microsoft]}
   - {name: Windows IT Pro Blog, url: "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/board?board.id=Windows-ITPro-blog", type: rss, tags: [windows, microsoft]}
